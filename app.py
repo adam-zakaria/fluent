@@ -8,19 +8,10 @@ CORS(app)
 def add_row():
     # Get all the languages from the form data
     languages = request.form.getlist('language')
-    
-    # Count the number of languages
-    language_count = len(languages)
-    
-    # Debugging: print the list of languages and their count
-    print("Languages:", languages)
-    print("Number of languages:", language_count)
-    
-    # Return a response indicating the number of languages
-    html = "<div class='flex flex-row'>"
-    html += "<input type='text' name='text' class='w-64 border p-2'>"
+    html = "<div class='flex flex-row overflow-x-auto'>"
+    html += "<input type='text' name='text' class='w-64 border p-2 flex-none'>"
     for language in languages:
-        html += f"<div class='w-64 border p-2'>translate({language})</div>"
+        html += f"<div class='w-64 border p-2 flex-none'></div>"
     html += "</div>"
     return html
     #return jsonify({'message': f'{language_count} languages received'})

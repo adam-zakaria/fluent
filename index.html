@@ -14,7 +14,7 @@
     <div class='table'>
 
       <!-- table-->
-      <div class='flex flex-row'>
+      <div class='flex flex-row overflow-x-auto'>
         <!-- langs -->
           <select name="language" class='w-64 language border p-2'>
             <option value="english">English</option>
@@ -24,10 +24,10 @@
           </select>
       </div>
       <!-- phrases -->
-      <div class="flex flex-row">
-        <input type="text" name="text" class="w-64 border p-2"> 
-        <div class="w-64 border p-2"></div>
-        <!-- div -->
+      <div class="flex flex-row overflow-x-auto">
+        <input type="text" name="text" class="w-64 border p-2 flex-none">
+        <div class="w-64 border p-2 flex-none"></div>
+        <div class="w-64 border p-2 flex-none"></div>
       </div>
     </div>
       <button>Add Language (column)</button>
