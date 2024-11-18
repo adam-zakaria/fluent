@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Selector</title>
+    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <h1>Polyglot</h1>
+    <p class="text-blue-500">This text will be blue.</p>
+
+    <div class=''>
+
+      <!-- table-->
+      <div class='flex flex-row'>
+        <!-- langs -->
+          <select name="languages" class='w-64 languages'>
+            <option value="english">English</option>
+          </select>
+      </div>
+      <!-- phrases -->
+      <div class="flex flex-row">
+        <input type="text" name="text" class="w-64"> 
+        <!-- div -->
+      </div>
+      <button>Add Language (column)</button>
+      <button>Add Phrase (row)</button>
+    </div>
+  </body>
+</html>
