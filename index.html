@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class='w-full' lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,22 +7,21 @@
     <script src="https://unpkg.com/htmx.org@1.8.4"></script>
     <link rel="stylesheet" href="/style.css">
   </head>
-  <body>
+  <body class='w-full'>
     <h1>Polyglot</h1>
     <p class="text-blue-500">This text will be blue.</p>
 
     <!-- buttons -->
-    <button hx-post="http://localhost:3000/add_col" hx-include=".phrase" hx-target=".table" hx-swap="beforeend">
+    <button onclick="add_col()">
       Add Language (column)
     </button>
     <button hx-post="http://localhost:3000/add_row" hx-include=".language" hx-target=".table" hx-swap="afterend">
       Add Phrase (row)
     </button>
-
     <!-- table-->
-    <div class='table'>
-      <!-- langs -->
-      <div class='overflow-x-auto'>
+    <div class='overflow-x-auto w-full whitespace-nowrap'>
+      <!-- languages -->
+      <div class='languages row w-full'>
           <select name="language" class='w-64 language border p-2'>
             <option value="english">English</option>
           </select>
@@ -31,10 +30,34 @@
           </select>
       </div>
       <!-- phrases -->
-      <div class="overflow-x-auto phrases">
-        <input type="text" name="text" class="w-64 border p-2 phrase">
-        <div class="inline-block w-64 border border-black p-2">text</div>
+      <div class='phrases row w-full'>
+        <input type='text' name='text' class='w-64 border p-2 phrase'>
+        <div class='inline-block w-64 border border-black p-2'>text</div>
       </div>
     </div>
   </body>
+  <script>
+    languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
+    options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
+
+    function add_col() {
+      let numColumns = document.querySelectorAll('.language').length;
+      document.querySelectorAll('.row').forEach((row, i) => {
+        if (i === 0) {
+          // set the option for the select depending on the column number
+          // i.e. match the language index to the column index
+          row.insertAdjacentHTML('beforeend', `
+            <select name='language' class='w-64 language border p-2'>
+              ${options.map((opt, index) => 
+                `<option value='${languages[index]}' ${index === numColumns ? 'selected' : ''}>${languages[index]}</option>`
+              ).join('')}
+            </select>
+          `);
+        } else {
+          row.insertAdjacentHTML('beforeend', "<div class='w-64 border p-2 inline-block'>text</div>");
+        }
+      });
+    }
+
+  </script>
 </html>
