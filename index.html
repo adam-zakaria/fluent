@@ -15,11 +15,11 @@
     <button onclick="add_col()">
       Add Language (column)
     </button>
-    <button hx-post="http://localhost:3000/add_row" hx-include=".language" hx-target=".table" hx-swap="afterend">
+    <button onclick="add_row()">
       Add Phrase (row)
     </button>
     <!-- table-->
-    <div class='overflow-x-auto w-full whitespace-nowrap'>
+    <div class='overflow-x-auto w-full whitespace-nowrap table'>
       <!-- languages -->
       <div class='languages row w-full'>
           <select name="language" class='w-64 language border p-2'>
@@ -57,6 +57,24 @@
           row.insertAdjacentHTML('beforeend', "<div class='w-64 border p-2 inline-block'>text</div>");
         }
       });
+    }
+
+    function add_row() {
+      // add <div>1<input>#cols<div></div></div>
+      
+      let html = `
+      <div class='phrase row w-full'>
+        <input type='text' name='text' class='w-64 border p-2'></input>
+      `
+      document.querySelectorAll('.language').forEach((lang, i) => {
+        if (i > 0) {
+          html += `
+          <div class='w-64 border p-2 inline-block'>${languages[i]}</div>
+          `
+        }
+      });
+      html += `</div>`
+      document.querySelector('.table').insertAdjacentHTML('beforeend', html);
     }
 
   </script>
