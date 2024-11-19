@@ -28,13 +28,13 @@ def add_row():
     num_rows+=1
     # Get all the languages from the form data
     languages = request.form.getlist('language')
-    html = "<div class='flex flex-row overflow-x-auto'>"
-    html += "<input type='text' name='text' class='w-64 border p-2 flex-none'>"
-    for language in languages:
-        html += f"<div class='w-64 border p-2 flex-none'></div>"
+    html = "<div class='overflow-x-auto'>"
+    html += "<input type='text' name='text' class='w-64 border p-2'></input>"
+    # skip english
+    for i in range(0, len(languages)-1):
+        html += f"<div class='w-64 border p-2 inline-block'>{languages[i+1]}</div>"
     html += "</div>"
     return html
-    #return jsonify({'message': f'{language_count} languages received'})
 
 if __name__ == '__main__':
     app.run(debug=True)

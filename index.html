@@ -11,10 +11,18 @@
     <h1>Polyglot</h1>
     <p class="text-blue-500">This text will be blue.</p>
 
+    <!-- buttons -->
+    <button hx-post="http://localhost:3000/add_col" hx-include=".phrase" hx-target=".table" hx-swap="beforeend">
+      Add Language (column)
+    </button>
+    <button hx-post="http://localhost:3000/add_row" hx-include=".language" hx-target=".table" hx-swap="afterend">
+      Add Phrase (row)
+    </button>
+
     <!-- table-->
     <div class='table'>
       <!-- langs -->
-      <div class='flex flex-row flex-row0 overflow-x-auto'>
+      <div class='overflow-x-auto'>
           <select name="language" class='w-64 language border p-2'>
             <option value="english">English</option>
           </select>
@@ -23,18 +31,10 @@
           </select>
       </div>
       <!-- phrases -->
-      <div class="flex flex-row flex-row1 overflow-x-auto phrases">
-        <input type="text" name="text" class="w-64 border p-2 flex-none phrase">
-        <div class="w-64 border p-2 flex-none"></div>
-        <div class="w-64 border p-2 flex-none"></div>
+      <div class="overflow-x-auto phrases">
+        <input type="text" name="text" class="w-64 border p-2 phrase">
+        <div class="inline-block w-64 border border-black p-2">text</div>
       </div>
     </div>
-      <!-- buttons -->
-      <button hx-post="http://localhost:3000/add_col" hx-include=".phrase" hx-target=".table" hx-swap="beforeend">
-        Add Language (column)
-      </button>
-      <button hx-post="http://localhost:3000/add_row" hx-include=".language" hx-target=".table" hx-swap="afterend">
-        Add Phrase (row)
-      </button>
   </body>
 </html>
