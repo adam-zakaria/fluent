@@ -11,11 +11,10 @@
     <h1>Polyglot</h1>
     <p class="text-blue-500">This text will be blue.</p>
 
+    <!-- table-->
     <div class='table'>
-
-      <!-- table-->
-      <div class='flex flex-row overflow-x-auto'>
-        <!-- langs -->
+      <!-- langs -->
+      <div class='flex flex-row flex-row0 overflow-x-auto'>
           <select name="language" class='w-64 language border p-2'>
             <option value="english">English</option>
           </select>
@@ -24,13 +23,16 @@
           </select>
       </div>
       <!-- phrases -->
-      <div class="flex flex-row overflow-x-auto">
-        <input type="text" name="text" class="w-64 border p-2 flex-none">
+      <div class="flex flex-row flex-row1 overflow-x-auto phrases">
+        <input type="text" name="text" class="w-64 border p-2 flex-none phrase">
         <div class="w-64 border p-2 flex-none"></div>
         <div class="w-64 border p-2 flex-none"></div>
       </div>
     </div>
-      <button>Add Language (column)</button>
+      <!-- buttons -->
+      <button hx-post="http://localhost:3000/add_col" hx-include=".phrase" hx-target=".table" hx-swap="beforeend">
+        Add Language (column)
+      </button>
       <button hx-post="http://localhost:3000/add_row" hx-include=".language" hx-target=".table" hx-swap="afterend">
         Add Phrase (row)
       </button>
