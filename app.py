@@ -1,40 +1,72 @@
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify
 from flask_cors import CORS
+from google.cloud import translate_v2 as translate
+from google.cloud import texttospeech
 
 app = Flask(__name__)
 CORS(app)
 
-langs = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
-lang_index=2 # start with 2 because 0 and 1 are reserved for english and spanish, which are default starters in the table
-num_rows=2
+# Initialize translate and text to speech clients
+translate_client = translate.Client()
+tts_client = texttospeech.TextToSpeechClient()
 
-@app.route('/add_col', methods=['POST'])
-def add_col():
-    # Create a select element with the current language at lang_index
-    html = f'<div><select hx-swap-oob="beforeend:.flex-row0" name="language" class="w-64 language border p-2">'
-    html += f'<option value="{langs[lang_index]}">{langs[lang_index]}</option>'
-    html += '</select></div>'
-    
-    # Append a div with the current language for each row
-    for row in range(1, num_rows):
-        html += f'<div hx-swap-oob="beforeend:.flex-row{row}">{langs[lang_index]}</div>'
-    
-    return html
-  
+@app.route('/translate', methods=['POST'])
+def translate_text():
+    data = request.json
+    text = data.get('text')
+    target_language = data.get('target_language')
 
-@app.route('/add_row', methods=['POST'])
-def add_row():
-    global num_rows
-    num_rows+=1
-    # Get all the languages from the form data
-    languages = request.form.getlist('language')
-    html = "<div class='overflow-x-auto'>"
-    html += "<input type='text' name='text' class='w-64 border p-2'></input>"
-    # skip english
-    for i in range(0, len(languages)-1):
-        html += f"<div class='w-64 border p-2 inline-block'>{languages[i+1]}</div>"
-    html += "</div>"
-    return html
+    if not text or not target_language:
+        return jsonify({'error': 'Text and target language are required'}), 400
+
+    # Validate target_language
+    valid_languages = ['en', 'es', 'fr', 'de', 'it', 'ja', 'zh']
+    if target_language not in valid_languages:
+        return jsonify({'error': f'Invalid target language: {target_language}'}), 400
+
+    try:
+        result = translate_client.translate(text, target_language=target_language)
+        return jsonify({
+            'translated_text': result['translatedText'],
+            'source_language': result['detectedSourceLanguage']
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/text-to-speech', methods=['POST'])
+def text_to_speech():
+    data = request.json
+    text = data['text']
+    language_code = data['language_code']
+
+    try:
+        synthesis_input = texttospeech.SynthesisInput(text=text)
+
+        voice = texttospeech.VoiceSelectionParams(
+            language_code=language_code,
+            ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
+        )
+
+        audio_config = texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.MP3
+        )
+
+        response = tts_client.synthesize_speech(
+            input=synthesis_input, voice=voice, audio_config=audio_config
+        )
+
+        # Generate a unique filename
+        filename = f"speech_{uuid.uuid4()}.mp3"
+        file_path = os.path.join('/tmp', filename)
+
+        # Save the audio content to a file
+        with open(file_path, 'wb') as out:
+            out.write(response.audio_content)
+
+        # Send the file
+        return send_file(file_path, mimetype='audio/mpeg', as_attachment=True, download_name=filename)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
