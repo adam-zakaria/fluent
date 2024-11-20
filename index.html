@@ -6,76 +6,181 @@
     <title>Language Selector</title>
     <script src="https://unpkg.com/htmx.org@1.8.4"></script>
     <link rel="stylesheet" href="/style.css">
+    <script>
+        languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
+        // append options to default select
+
+        options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
+
+        // append options to default selects, english and spanish for now
+        window.onload = function() {
+            document.querySelector('.defaultSelect').insertAdjacentHTML('beforeend', options.join(''));
+            document.querySelector('.defaultSelect2').insertAdjacentHTML('beforeend', options.map((opt, index) => 
+              `<option value='${languages[index]}' ${languages[index] === 'spanish' ? 'selected' : ''}>${languages[index]}</option>`
+            ).join(''));
+        };
+
+        function add_col() {
+          let numColumns = document.querySelectorAll('.language').length;
+          if (numColumns === languages.length){
+            alert('Max languages reached')
+            return;
+          }
+          document.querySelectorAll('.row').forEach((row, i) => {
+            // first row - add select with option based on column number
+            // other rows - add div with translated phrase
+            if (i === 0) {
+              row.insertAdjacentHTML('beforeend', `
+                <select onchange='translateColumn(this)' name='language' class='w-64 language p-2'>
+                  ${options.map((opt, index) => 
+                    `<option value='${languages[index]}' ${index === numColumns ? 'selected' : ''}>${languages[index]}</option>`
+                  ).join('')}
+                </select>
+              `);
+
+            } else {
+                // create a div and update it with the translation later
+                row.insertAdjacentHTML('beforeend', `<div class='w-64 border p-2 inline-block translatedPhrase'></div>`);
+
+                // if text input is empty, don't translate
+                if (row.querySelector('input').value === '') {
+                  return
+                }
+
+                // translate
+                fetch('http://localhost:3000/translate', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  phrase: row.querySelector('input').value,
+                  target_language: languages[numColumns]
+                })
+              })
+              .then(response => response.json())
+              .then(data => {
+                row.lastElementChild.textContent = data.translated_text;
+              })
+              .catch(error => {
+                row.lastElementChild.textContent = 'Translation failed';
+                console.error('Translation error:', error);
+              });
+            }
+          });
+        }
+
+        function add_row() {
+          // add <div>1<input>#cols<div></div></div>
+          
+          let html = `
+          <div class='phrases row w-full'>
+            <input onchange='gtranslate(this)' type='text' name='text' class='w-64 p-2 phrases'></input>
+          `
+          document.querySelectorAll('.language').forEach((lang, i) => {
+            if (i > 0) {
+              html += `
+              <div class='inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase'></div>
+              `
+            }
+          });
+          html += `</div>`
+          document.querySelector('.table').insertAdjacentHTML('beforeend', html);
+        }
+
+        function gtranslate(input) {
+          /* 
+          textInput onChange, iterate through the cells of the row / over the columns. translate first cell (text input) with the column language (select values)
+          */
+
+          // if text input is empty, don't translate
+          if (input.value === '') return;
+
+          // get all but first column
+          const languageSelects = [...document.querySelectorAll('.language')].slice(1);
+          const translationDivs = input.parentElement.querySelectorAll('.translatedPhrase');
+          
+          // iterate over all columns of the text input row
+          languageSelects.forEach((langSelect, i) => {
+              fetch('http://localhost:3000/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                phrase: input.value,
+                target_language: langSelect.value
+              })
+              })
+              .then(response => response.json())
+              .then(data => {
+                translationDivs[i].textContent = data.translated_text;
+              })
+              .catch(error => {
+                translationDivs[i].textContent = 'Translation failed';
+                console.error('Translation error:', error);
+                });
+          });
+        }
+
+        function translateColumn(select) {
+          /* 
+          When language selector changes:
+          1. Get column index
+          2. Get all phrase rows and filter out empty ones
+          3. For each row with text, translate and update the corresponding column
+          */
+          // 1. Get column index
+          const columnIndex = [...select.parentElement.children].indexOf(select);
+          
+          // 2. Get all phrase rows and filter out empty ones
+          [...document.querySelectorAll('.phrases.row')]
+            .filter(row => row.querySelector('input').value)
+            .forEach(row => {
+              // 3. Translate and update the corresponding column
+              fetch('http://localhost:3000/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  phrase: row.querySelector('input').value,
+                  target_language: select.value
+                })
+              })
+              .then(response => response.json())
+              .then(data => {
+                row.children[columnIndex].textContent = data.translated_text;
+              })
+              .catch(error => {
+                row.children[columnIndex].textContent = 'Translation failed';
+                console.error('Translation error:', error);
+              });
+            });
+        }
+    </script>
   </head>
   <body class='w-full'>
     <h1>Polyglot</h1>
-    <p class="text-blue-500">This text will be blue.</p>
 
     <!-- buttons -->
+    <div class="pb-2">
     <button onclick="add_col()">
       Add Language (column)
     </button>
     <button onclick="add_row()">
       Add Phrase (row)
     </button>
+    </div>
     <!-- table-->
     <div class='overflow-x-auto w-full whitespace-nowrap table'>
       <!-- languages -->
       <div class='languages row w-full'>
-          <select name="language" class='w-64 language border p-2'>
-            <option value="english">English</option>
-          </select>
-          <select name="language" class='w-64 language border p-2'>
-            <option value="spanish">Spanish</option>
+          <select name="language" class='w-64 language p-2 defaultSelect' onchange='translateColumn(this)'>
+          </select><select name="language" class='w-64 language p-2 defaultSelect2' onchange='translateColumn(this)'>
           </select>
       </div>
       <!-- phrases -->
       <div class='phrases row w-full'>
-        <input type='text' name='text' class='w-64 border p-2 phrase'>
-        <div class='inline-block w-64 border border-black p-2'>text</div>
+        <input type='text' name='text' class='w-64 p-2 phrase' onchange='gtranslate(this)'>
+        <div class='inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase'>test</div>
       </div>
     </div>
   </body>
-  <script>
-    languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
-    options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
-
-    function add_col() {
-      let numColumns = document.querySelectorAll('.language').length;
-      document.querySelectorAll('.row').forEach((row, i) => {
-        if (i === 0) {
-          // set the option for the select depending on the column number
-          // i.e. match the language index to the column index
-          row.insertAdjacentHTML('beforeend', `
-            <select name='language' class='w-64 language border p-2'>
-              ${options.map((opt, index) => 
-                `<option value='${languages[index]}' ${index === numColumns ? 'selected' : ''}>${languages[index]}</option>`
-              ).join('')}
-            </select>
-          `);
-        } else {
-          row.insertAdjacentHTML('beforeend', "<div class='w-64 border p-2 inline-block'>text</div>");
-        }
-      });
-    }
-
-    function add_row() {
-      // add <div>1<input>#cols<div></div></div>
-      
-      let html = `
-      <div class='phrase row w-full'>
-        <input type='text' name='text' class='w-64 border p-2'></input>
-      `
-      document.querySelectorAll('.language').forEach((lang, i) => {
-        if (i > 0) {
-          html += `
-          <div class='w-64 border p-2 inline-block'>${languages[i]}</div>
-          `
-        }
-      });
-      html += `</div>`
-      document.querySelector('.table').insertAdjacentHTML('beforeend', html);
-    }
-
-  </script>
 </html>

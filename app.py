@@ -12,20 +12,31 @@ tts_client = texttospeech.TextToSpeechClient()
 
 @app.route('/translate', methods=['POST'])
 def translate_text():
+    print('/translate')
     data = request.json
-    text = data.get('text')
+    text = data.get('phrase')
     target_language = data.get('target_language')
 
     if not text or not target_language:
+        print(text, target_language)
         return jsonify({'error': 'Text and target language are required'}), 400
 
-    # Validate target_language
-    valid_languages = ['en', 'es', 'fr', 'de', 'it', 'ja', 'zh']
-    if target_language not in valid_languages:
+    language_map = {
+        'english': 'en',
+        'spanish': 'es',
+        'mandarin': 'zh',
+        'japanese': 'ja',
+        'russian': 'ru',
+        'hindi': 'hi',
+        'arabic': 'ar',
+        'portuguese': 'pt'
+    }
+
+    if target_language not in language_map:
         return jsonify({'error': f'Invalid target language: {target_language}'}), 400
 
     try:
-        result = translate_client.translate(text, target_language=target_language)
+        result = translate_client.translate(text, target_language=language_map[target_language])
         return jsonify({
             'translated_text': result['translatedText'],
             'source_language': result['detectedSourceLanguage']
