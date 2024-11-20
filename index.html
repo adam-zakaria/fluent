@@ -74,7 +74,7 @@
           // add <div>1<input>#cols<div></div></div>
           
           let html = `
-          <div class='phrases row w-full'>
+          <div class='phrases flex flex-row row w-full'>
             <input onchange='gtranslate(this)' type='text' name='text' class='w-64 p-2 phrases'></input>
           `
           document.querySelectorAll('.language').forEach((lang, i) => {
@@ -171,13 +171,13 @@
     <!-- table-->
     <div class='overflow-x-auto w-full whitespace-nowrap table'>
       <!-- languages -->
-      <div class='languages row w-full'>
+      <div class='flex flex-row languages row w-full'>
           <select name="language" class='w-64 language p-2 defaultSelect' onchange='translateColumn(this)'>
           </select><select name="language" class='w-64 language p-2 defaultSelect2' onchange='translateColumn(this)'>
           </select>
       </div>
       <!-- phrases -->
-      <div class='phrases row w-full'>
+      <div class='flex flex-row phrases row w-full'>
         <input type='text' name='text' class='w-64 p-2 phrase' onchange='gtranslate(this)'>
         <div class='inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase'>test</div>
       </div>
