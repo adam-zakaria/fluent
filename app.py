@@ -63,10 +63,7 @@ def text_to_speech():
 
     data = request.json
     text = data['text']
-    language = data['language_code']
-    
-    # Use the correct language code from the map
-    language_code = language_map[language]
+    language_code = language_map[data['language']]
 
     try:
         synthesis_input = texttospeech.SynthesisInput(text=text)
@@ -80,16 +77,6 @@ def text_to_speech():
             audio_encoding=texttospeech.AudioEncoding.MP3
         )
 
-        # breaking here:
-        """
-        (Pdb) n
-        google.api_core.exceptions.InvalidArgument: 400 Voice '' does not exist. Is it misspelled?
-        > /Users/azakaria/Code/polyglot_htmx1/app.py(70)text_to_speech()
-        -> response = tts_client.synthesize_speech(
-        (Pdb) voice
-        language_code: "portuguese"
-        ssml_gender: NEUTRAL
-        """
         response = tts_client.synthesize_speech(
             input=synthesis_input, voice=voice, audio_config=audio_config
         )
