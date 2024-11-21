@@ -133,8 +133,6 @@
                   ).join('')}
                 </select>
               `);
-              //localStorageVal.push(languages[numColumns]);
-              // table = JSON.parse(localStorage.getItem('table'))
               table[i].push(languages[numColumns]);
               localStorage.setItem('table', JSON.stringify(table));
             } else {
@@ -146,6 +144,8 @@
                 localStorage.setItem('table', JSON.stringify(table));
                 continue;
               }
+              // update the div with the translation
+              let translatedText = '';
               fetch('http://localhost:3000/translate', {
                 method: 'POST',
                 headers: {
@@ -159,15 +159,28 @@
               .then(response => response.json())
               .then(data => {
                 // update the div with the translation
-                rows[i].lastElementChild.textContent = data.translated_text;
-                // this is async and may not be updated by the time the table is written to local storage
-                table[i].push(data.translated_text);
-                localStorage.setItem('table', JSON.stringify(table));
+                // hit the text to speech api, and update the div with a play icon to play the audio
+                fetch('http://localhost:3000/text-to-speech', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ text: data.translated_text, language_code: languages[numColumns] })
+                }).then(response => response.json())
+                .then(audio_file => {
+                  debugger;
+                  rows[i].lastElementChild.innerHTML = `
+                    ${data.translated_text} 
+                    <svg onclick="playAudio('${audio_file.audio_url}')" class="inline-block w-4 h-4 ml-2 cursor-pointer hover:text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/>
+                    </svg>
+                  `;
+                })
+
               })
               .catch(error => {
                 rows[i].lastElementChild.textContent = 'Translation failed';
                 console.error('Translation error:', error);
               });
+
             }
           }
         }
@@ -274,6 +287,10 @@
                 console.error('Translation error:', error);
               });
             });
+        }
+
+        function playAudio(audioUrl) {
+          new Audio(audioUrl).play();
         }
     </script>
   </head>

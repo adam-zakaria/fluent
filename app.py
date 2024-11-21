@@ -1,7 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from google.cloud import translate_v2 as translate
 from google.cloud import texttospeech
+import os
+
+import uuid
 
 app = Flask(__name__)
 CORS(app)
@@ -46,9 +49,24 @@ def translate_text():
 
 @app.route('/text-to-speech', methods=['POST'])
 def text_to_speech():
+    print('/text-to-speech', flush=True)
+    language_map = {
+        'english': 'en-US',
+        'spanish': 'es-ES',
+        'mandarin': 'cmn-CN',
+        'japanese': 'ja-JP',
+        'russian': 'ru-RU',
+        'hindi': 'hi-IN',
+        'arabic': 'ar-XA',
+        'portuguese': 'pt-PT'
+    }
+
     data = request.json
     text = data['text']
-    language_code = data['language_code']
+    language = data['language_code']
+    
+    # Use the correct language code from the map
+    language_code = language_map[language]
 
     try:
         synthesis_input = texttospeech.SynthesisInput(text=text)
@@ -62,13 +80,23 @@ def text_to_speech():
             audio_encoding=texttospeech.AudioEncoding.MP3
         )
 
+        # breaking here:
+        """
+        (Pdb) n
+        google.api_core.exceptions.InvalidArgument: 400 Voice '' does not exist. Is it misspelled?
+        > /Users/azakaria/Code/polyglot_htmx1/app.py(70)text_to_speech()
+        -> response = tts_client.synthesize_speech(
+        (Pdb) voice
+        language_code: "portuguese"
+        ssml_gender: NEUTRAL
+        """
         response = tts_client.synthesize_speech(
             input=synthesis_input, voice=voice, audio_config=audio_config
         )
 
         # Generate a unique filename
         filename = f"speech_{uuid.uuid4()}.mp3"
-        file_path = os.path.join('/tmp', filename)
+        file_path = os.path.join('./', filename)
 
         # Save the audio content to a file
         with open(file_path, 'wb') as out:
