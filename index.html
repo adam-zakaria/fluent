@@ -40,7 +40,7 @@
             row.forEach((cell, j) => {
               // first cell is input
               if (j == 0) {
-                html += '<input type="text" name="text" class="w-64 p-2 phrase" onchange="gtranslate(this)">';
+                html += `<input row=${i} type="text" name="text" class="w-64 p-2 phrase" onchange="gtranslate(this)">`;
               }
               else{
                 // all other cells are divs (phrases)
@@ -57,7 +57,6 @@
         };
 
         function add_col() {
-          let localStorageVal = []
           table = JSON.parse(localStorage.getItem('table'))
           let numColumns = document.querySelectorAll('.language').length;
           if (numColumns === languages.length){
@@ -79,15 +78,15 @@
                 </select>
               `);
               //localStorageVal.push(languages[numColumns]);
-              table = JSON.parse(localStorage.getItem('table'))
-              table[i].push(val)
+              // table = JSON.parse(localStorage.getItem('table'))
+              table[i].push(languages[numColumns]);
               localStorage.setItem('table', JSON.stringify(table));
             } else {
               // create a div and update it with the translation later
               rows[i].insertAdjacentHTML('beforeend', `<div class='w-64 border p-2 inline-block translatedPhrase'></div>`);
               // if input is empty, don't translate
               if (rows[i].querySelector('input').value === '') {
-                localStorageVal.push('');
+                table[i].push('');
                 localStorage.setItem('table', JSON.stringify(table));
                 continue;
               }
@@ -106,7 +105,8 @@
                 // update the div with the translation
                 rows[i].lastElementChild.textContent = data.translated_text;
                 // this is async and may not be updated by the time the table is written to local storage
-                localStorageVal.push(data.translated_text);
+                table[i].push(data.translated_text);
+                localStorage.setItem('table', JSON.stringify(table));
               })
               .catch(error => {
                 rows[i].lastElementChild.textContent = 'Translation failed';
@@ -117,19 +117,25 @@
           /*
           The issue is 
           */
+          /*
           table = JSON.parse(localStorage.getItem('table'))
           table.forEach((row, i) => {
             row.push(localStorageVal[i]);
           })
           localStorage.setItem('table', JSON.stringify(table));
+          */
         }
 
         function add_row() {
           // add <div>1<input>#cols<div></div></div>
-          
+          // get the number of rows from HTML
+          let numRows = document.querySelectorAll('.row').length;
+          let localStorageRow = [];
+          let table = JSON.parse(localStorage.getItem('table'))
+
           let html = `
           <div class='phrases flex flex-row row w-full'>
-            <input onchange='gtranslate(this)' type='text' name='text' class='w-64 p-2 phrases'></input>
+            <input row=${numRows} onchange='gtranslate(this)' type='text' name='text' class='w-64 p-2 phrases'></input>
           `
           document.querySelectorAll('.language').forEach((lang, i) => {
             if (i > 0) {
@@ -137,9 +143,14 @@
               <div class='inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase'></div>
               `
             }
+            localStorageRow.push('');
           });
+          table.push(localStorageRow);
+          localStorage.setItem('table', JSON.stringify(table));
           html += `</div>`
           document.querySelector('.table').insertAdjacentHTML('beforeend', html);
+
+
         }
 
         function gtranslate(input) {
@@ -149,6 +160,14 @@
 
           // if text input is empty, don't translate
           if (input.value === '') return;
+
+          /*
+          How to get the row index? 
+          */
+         let table = JSON.parse(localStorage.getItem('table'))
+         let rowIndex = input.getAttribute('row');
+         table[rowIndex][0] = input.value;
+         localStorage.setItem('table', JSON.stringify(table));
 
           // get all but first column
           const languageSelects = [...document.querySelectorAll('.language')].slice(1);
@@ -167,6 +186,7 @@
               .then(response => response.json())
               .then(data => {
                 translationDivs[i].textContent = data.translated_text;
+
               })
               .catch(error => {
                 translationDivs[i].textContent = 'Translation failed';
