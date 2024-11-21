@@ -8,6 +8,29 @@
     <link rel="stylesheet" href="/style.css">
     <script>
         languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
+        
+        // Add updateTableStorage at the start of the script
+        function updateTableStorage() {
+          const table = [];
+          document.querySelectorAll('.row').forEach((row, rowIndex) => {
+            table[rowIndex] = [];
+            if (rowIndex === 0) {
+              // First row: get language values from selects
+              row.querySelectorAll('.language').forEach(select => {
+                table[rowIndex].push(select.value);
+              });
+            } else {
+              // Other rows: get input value and translated phrases
+              const input = row.querySelector('input');
+              table[rowIndex].push(input?.value || '');
+              row.querySelectorAll('.translatedPhrase').forEach(phrase => {
+                table[rowIndex].push(phrase.textContent || '');
+              });
+            }
+          });
+          localStorage.setItem('table', JSON.stringify(table));
+        }
+
         // append options to default select
 
         options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
@@ -29,7 +52,9 @@
             html += "<div class='flex flex-row languages row w-full'>";
             row.forEach((language, j) => {
               html += `<select name="language" class="w-64 language p-2 defaultSelect" onchange="translateColumn(this)">`;
-              html += `<option value="${language}">${language}</option>`;
+              languages.forEach(lang => {
+                html += `<option value="${lang}" ${lang === language ? 'selected' : ''}>${lang}</option>`;
+              });
               html += '</select>';
             });
             html += '</div>';
@@ -40,11 +65,11 @@
             row.forEach((cell, j) => {
               // first cell is input
               if (j == 0) {
-                html += `<input row=${i} type="text" name="text" class="w-64 p-2 phrase" onchange="gtranslate(this)">`;
+                html += `<input row=${i} type="text" name="text" class="w-64 p-2 phrase" onchange="gtranslate(this); updateTableStorage()" value="${cell}"></input>`;
               }
               else{
                 // all other cells are divs (phrases)
-                html += '<div class="inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase"></div>';
+                html += `<div class="inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase">${cell}</div>`;
               }
             });
           }
@@ -54,6 +79,37 @@
         window.onload = function() {
           // render table, append to table div
           document.querySelector('.table').insertAdjacentHTML('beforeend', html);
+          
+          // Create observer to watch table changes
+          const tableObserver = new MutationObserver(() => {
+            console.log('table changed');
+            const table = [];
+            document.querySelectorAll('.row').forEach((row, rowIndex) => {
+              table[rowIndex] = [];
+              if (rowIndex === 0) {
+                // First row: get language values from selects
+                row.querySelectorAll('.language').forEach(select => {
+                  table[rowIndex].push(select.value);
+                });
+              } else {
+                // Other rows: get input value and translated phrases
+                const input = row.querySelector('input');
+                table[rowIndex].push(input?.value || '');
+                row.querySelectorAll('.translatedPhrase').forEach(phrase => {
+                  table[rowIndex].push(phrase.textContent || '');
+                });
+              }
+            });
+            localStorage.setItem('table', JSON.stringify(table));
+          });
+
+          // Start observing the table div for changes
+          tableObserver.observe(document.querySelector('.table'), {
+            subtree: true, // Watch all descendants
+            childList: true, // Watch for added/removed nodes
+            characterData: true, // Watch for text changes
+            attributes: true // Watch for attribute changes
+          });
         };
 
         function add_col() {
@@ -114,16 +170,6 @@
               });
             }
           }
-          /*
-          The issue is 
-          */
-          /*
-          table = JSON.parse(localStorage.getItem('table'))
-          table.forEach((row, i) => {
-            row.push(localStorageVal[i]);
-          })
-          localStorage.setItem('table', JSON.stringify(table));
-          */
         }
 
         function add_row() {
@@ -186,7 +232,7 @@
               .then(response => response.json())
               .then(data => {
                 translationDivs[i].textContent = data.translated_text;
-
+                updateTableStorage();
               })
               .catch(error => {
                 translationDivs[i].textContent = 'Translation failed';
@@ -221,6 +267,7 @@
               .then(response => response.json())
               .then(data => {
                 row.children[columnIndex].textContent = data.translated_text;
+                updateTableStorage();
               })
               .catch(error => {
                 row.children[columnIndex].textContent = 'Translation failed';
