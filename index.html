@@ -13,14 +13,15 @@
         options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
 
 
-        if(localStorage.getItem('table') === null) {
+        // create default table if none exists
+        if(localStorage.getItem('table') === null || localStorage.getItem('table') === '') {
           localStorage.setItem('table', JSON.stringify([
             ['english', 'spanish'],
             ['', ''],
           ]));
         }
 
-        // create table 
+        // build table html from local storage
         html = '';
         JSON.parse(localStorage.getItem('table')).forEach((row, i) => {
           // First row is only selects (languages)
@@ -56,53 +57,71 @@
         };
 
         function add_col() {
+          let localStorageVal = []
+          table = JSON.parse(localStorage.getItem('table'))
           let numColumns = document.querySelectorAll('.language').length;
           if (numColumns === languages.length){
             alert('Max languages reached')
             return;
           }
-          document.querySelectorAll('.row').forEach((row, i) => {
-            // first row - add select with option based on column number
-            // other rows - add div with translated phrase
+
+          const rows = document.querySelectorAll('.row');
+          // iterate through all rows, translate the first cell if it has text
+          // first row is selects (languages), other rows are 1 input and n divs (phrases)
+          // if 
+          for (let i = 0; i < rows.length; i++) {
             if (i === 0) {
-              row.insertAdjacentHTML('beforeend', `
+              rows[i].insertAdjacentHTML('beforeend', `
                 <select onchange='translateColumn(this)' name='language' class='w-64 language p-2'>
                   ${options.map((opt, index) => 
                     `<option value='${languages[index]}' ${index === numColumns ? 'selected' : ''}>${languages[index]}</option>`
                   ).join('')}
                 </select>
               `);
-
+              //localStorageVal.push(languages[numColumns]);
+              table = JSON.parse(localStorage.getItem('table'))
+              table[i].push(val)
+              localStorage.setItem('table', JSON.stringify(table));
             } else {
-                // create a div and update it with the translation later
-                row.insertAdjacentHTML('beforeend', `<div class='w-64 border p-2 inline-block translatedPhrase'></div>`);
-
-                // if text input is empty, don't translate
-                if (row.querySelector('input').value === '') {
-                  return
-                }
-
-                // translate
-                fetch('http://localhost:3000/translate', {
+              // create a div and update it with the translation later
+              rows[i].insertAdjacentHTML('beforeend', `<div class='w-64 border p-2 inline-block translatedPhrase'></div>`);
+              // if input is empty, don't translate
+              if (rows[i].querySelector('input').value === '') {
+                localStorageVal.push('');
+                localStorage.setItem('table', JSON.stringify(table));
+                continue;
+              }
+              fetch('http://localhost:3000/translate', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  phrase: row.querySelector('input').value,
+                  phrase: rows[i].querySelector('input').value,
                   target_language: languages[numColumns]
                 })
               })
               .then(response => response.json())
               .then(data => {
-                row.lastElementChild.textContent = data.translated_text;
+                // update the div with the translation
+                rows[i].lastElementChild.textContent = data.translated_text;
+                // this is async and may not be updated by the time the table is written to local storage
+                localStorageVal.push(data.translated_text);
               })
               .catch(error => {
-                row.lastElementChild.textContent = 'Translation failed';
+                rows[i].lastElementChild.textContent = 'Translation failed';
                 console.error('Translation error:', error);
               });
             }
-          });
+          }
+          /*
+          The issue is 
+          */
+          table = JSON.parse(localStorage.getItem('table'))
+          table.forEach((row, i) => {
+            row.push(localStorageVal[i]);
+          })
+          localStorage.setItem('table', JSON.stringify(table));
         }
 
         function add_row() {
