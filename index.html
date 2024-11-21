@@ -12,12 +12,47 @@
 
         options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
 
-        // append options to default selects, english and spanish for now
+
+        if(localStorage.getItem('table') === null) {
+          localStorage.setItem('table', JSON.stringify([
+            ['english', 'spanish'],
+            ['', ''],
+          ]));
+        }
+
+        // create table 
+        html = '';
+        JSON.parse(localStorage.getItem('table')).forEach((row, i) => {
+          // First row is only selects (languages)
+          if (i == 0) {
+            html += "<div class='flex flex-row languages row w-full'>";
+            row.forEach((language, j) => {
+              html += `<select name="language" class="w-64 language p-2 defaultSelect" onchange="translateColumn(this)">`;
+              html += `<option value="${language}">${language}</option>`;
+              html += '</select>';
+            });
+            html += '</div>';
+          }
+          else{
+            html += "<div class='flex flex-row phrases row w-full'>";
+            // All other rows are 1 input and n divs (phrases)
+            row.forEach((cell, j) => {
+              // first cell is input
+              if (j == 0) {
+                html += '<input type="text" name="text" class="w-64 p-2 phrase" onchange="gtranslate(this)">';
+              }
+              else{
+                // all other cells are divs (phrases)
+                html += '<div class="inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase"></div>';
+              }
+            });
+          }
+        html += '</div>';
+        });
+
         window.onload = function() {
-            document.querySelector('.defaultSelect').insertAdjacentHTML('beforeend', options.join(''));
-            document.querySelector('.defaultSelect2').insertAdjacentHTML('beforeend', options.map((opt, index) => 
-              `<option value='${languages[index]}' ${languages[index] === 'spanish' ? 'selected' : ''}>${languages[index]}</option>`
-            ).join(''));
+          // render table, append to table div
+          document.querySelector('.table').insertAdjacentHTML('beforeend', html);
         };
 
         function add_col() {
@@ -170,17 +205,6 @@
     </div>
     <!-- table-->
     <div class='overflow-x-auto w-full whitespace-nowrap table'>
-      <!-- languages -->
-      <div class='flex flex-row languages row w-full'>
-          <select name="language" class='w-64 language p-2 defaultSelect' onchange='translateColumn(this)'>
-          </select><select name="language" class='w-64 language p-2 defaultSelect2' onchange='translateColumn(this)'>
-          </select>
-      </div>
-      <!-- phrases -->
-      <div class='flex flex-row phrases row w-full'>
-        <input type='text' name='text' class='w-64 p-2 phrase' onchange='gtranslate(this)'>
-        <div class='inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase'>test</div>
-      </div>
     </div>
   </body>
 </html>
