@@ -13,6 +13,12 @@ Flask:
 python3 -m flask run --host=0.0.0.0 --port=3000 --debug
 ```
 
+## Export api key
+Update this path.
+```
+Export GOOGLE_APPLICATION_CREDENTIALS="/Users/azakaria/Code/polyglot_old/backend/helical-glass-264223-7cb954d1e0b4.json"
+```
+
 # TODO
 * emptying an onchange does not empty the translation.
 * Add delete row
@@ -21,9 +27,6 @@ python3 -m flask run --host=0.0.0.0 --port=3000 --debug
 
 # Translate API key
 Translate api will automatically look for key in path specified here.
-```
-export GOOGLE_APPLICATION_CREDENTIALS="/Users/azakaria/Code/polyglot_old/backend/helical-glass-264223-7cb954d1e0b4.json"
-```
 
 # HTMX talking points
 * form data centric
