@@ -7,6 +7,8 @@
     <script src="https://unpkg.com/htmx.org@1.8.4"></script>
     <link rel="stylesheet" href="/style.css">
     <script>
+        const API_HOST = import.meta.env.VITE_API_HOST;
+
         languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
         
         // Add updateTableStorage at the start of the script
@@ -51,7 +53,7 @@
           if (i == 0) {
             html += "<div class='flex flex-row languages row w-full'>";
             row.forEach((language, j) => {
-              html += `<select name="language" class="w-64 language p-2 defaultSelect border-1 border-[#767676] border-solid" onchange="translateColumn(this)">`;
+              html += `<select name="language" class="w-32 language p-2 defaultSelect border-1 border-[#767676] border-solid" onchange="translateColumn(this)">`;
               languages.forEach(lang => {
                 html += `<option value="${lang}" ${lang === language ? 'selected' : ''}>${lang}</option>`;
               });
@@ -65,13 +67,13 @@
             row.forEach((cell, j) => {
               // first cell is input
               if (j == 0) {
-                html += `<input row=${i} type="text" name="text" class="w-64 p-2 phrase border-1 border-[#767676] border-solid" onchange="inputTranslate(this); updateTableStorage()" value="${cell}"></input>`;
+                html += `<input row=${i} type="text" name="text" class="w-32 p-2 phrase border-1 border-[#767676] border-solid" onchange="inputTranslate(this); updateTableStorage()" value="${cell}"></input>`;
               }
               else{
                 // all other cells are divs (phrases)
                 if (cell) {  // Only add play button if there's translated text
                   html += `
-                    <div class="inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase">
+                    <div class="inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase">
                       <div class="flex justify-between items-center">
                         <span>${cell}</span>
                         <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
@@ -81,7 +83,7 @@
                       </div>
                     </div>`;
                 } else {
-                  html += `<div class="inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase"></div>`;
+                  html += `<div class="inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase"></div>`;
                 }
               }
             });
@@ -140,7 +142,7 @@
           for (let i = 0; i < rows.length; i++) {
             if (i === 0) {
               rows[i].insertAdjacentHTML('beforeend', `
-                <select onchange='translateColumn(this)' name='language' class='w-64 language p-2 border-1 border-[#767676] border-solid'>
+                <select onchange='translateColumn(this)' name='language' class='w-32 language p-2 border-1 border-[#767676] border-solid'>
                   ${options.map((opt, index) => 
                     `<option value='${languages[index]}' ${index === numColumns ? 'selected' : ''}>${languages[index]}</option>`
                   ).join('')}
@@ -150,7 +152,7 @@
               localStorage.setItem('table', JSON.stringify(table));
             } else {
               // create a div and update it with the translation later
-              rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase'></div>`);
+              rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase'></div>`);
               // if input is empty, don't translate
               if (rows[i].querySelector('input').value === '') {
                 table[i].push('');
@@ -159,7 +161,7 @@
               }
               // update the div with the translation
               let translatedText = '';
-              fetch('http://localhost:3000/translate', {
+              fetch(`${API_HOST}/translate`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -174,7 +176,7 @@
                 // update the div with the translation
                 // hit the text to speech api, and update the div with a play icon to play the audio
                 console.log(data)
-                fetch('http://localhost:3000/text-to-speech', {
+                fetch(`${API_HOST}/text-to-speech`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ text: data.translated_text, language: languages[numColumns] })
@@ -212,12 +214,12 @@
 
           let html = `
           <div class='phrases flex flex-row row w-full'>
-            <input row=${numRows} onchange='inputTranslate(this)' type='text' name='text' class='w-64 p-2 phrases border-1 border-[#767676] border-solid'></input>
+            <input row=${numRows} onchange='inputTranslate(this)' type='text' name='text' class='w-32 p-2 phrases border-1 border-[#767676] border-solid'></input>
           `
           document.querySelectorAll('.language').forEach((lang, i) => {
             if (i > 0) {
               html += `
-              <div class='inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase'></div>
+              <div class='inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase'></div>
               `
             }
             localStorageRow.push('');
@@ -252,7 +254,7 @@
           
           // iterate over all columns of the text input row
           languageSelects.forEach((langSelect, i) => {
-              fetch('http://localhost:3000/translate', {
+              fetch(`${API_HOST}/translate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -263,7 +265,7 @@
               .then(response => response.json())
               .then(data => {
                 // Add text-to-speech request here
-                fetch('http://localhost:3000/text-to-speech', {
+                fetch(`${API_HOST}/text-to-speech`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ text: data.translated_text, language: langSelect.value })
@@ -296,7 +298,7 @@
           [...document.querySelectorAll('.phrases.row')]
             .filter(row => row.querySelector('input').value)
             .forEach(row => {
-              fetch('http://localhost:3000/translate', {
+              fetch(`${API_HOST}/translate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -306,7 +308,7 @@
               })
               .then(response => response.json())
               .then(data => {
-                fetch('http://localhost:3000/text-to-speech', {
+                fetch(`${API_HOST}/text-to-speech`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ text: data.translated_text, language: select.value })
@@ -378,7 +380,7 @@
               } else {
                 // If not in cache, fetch from server
                 const [text, language] = key.split('_');
-                fetch('http://localhost:3000/text-to-speech', {
+                fetch(`${API_HOST}/text-to-speech`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ text, language })

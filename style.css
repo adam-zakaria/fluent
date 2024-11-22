@@ -2,7 +2,7 @@
 
 input, select, div {
   /* 
-  without this, w-64 does not produce input and select that are rendered as the same width (small difference)
+  without this, w-32 does not produce input and select that are rendered as the same width (small difference)
   https://stackoverflow.com/questions/4073768/how-to-get-equal-width-of-input-and-select-fields
   */
     -webkit-box-sizing: border-box;
