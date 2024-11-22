@@ -51,7 +51,7 @@
           if (i == 0) {
             html += "<div class='flex flex-row languages row w-full'>";
             row.forEach((language, j) => {
-              html += `<select name="language" class="w-64 language p-2 defaultSelect" onchange="translateColumn(this)">`;
+              html += `<select name="language" class="w-64 language p-2 defaultSelect border-1 border-[#767676] border-solid" onchange="translateColumn(this)">`;
               languages.forEach(lang => {
                 html += `<option value="${lang}" ${lang === language ? 'selected' : ''}>${lang}</option>`;
               });
@@ -65,7 +65,7 @@
             row.forEach((cell, j) => {
               // first cell is input
               if (j == 0) {
-                html += `<input row=${i} type="text" name="text" class="w-64 p-2 phrase" onchange="gtranslate(this); updateTableStorage()" value="${cell}"></input>`;
+                html += `<input row=${i} type="text" name="text" class="w-64 p-2 phrase border-1 border-[#767676] border-solid" onchange="inputTranslate(this); updateTableStorage()" value="${cell}"></input>`;
               }
               else{
                 // all other cells are divs (phrases)
@@ -127,7 +127,7 @@
           for (let i = 0; i < rows.length; i++) {
             if (i === 0) {
               rows[i].insertAdjacentHTML('beforeend', `
-                <select onchange='translateColumn(this)' name='language' class='w-64 language p-2'>
+                <select onchange='translateColumn(this)' name='language' class='w-64 language p-2 border-1 border-[#767676] border-solid'>
                   ${options.map((opt, index) => 
                     `<option value='${languages[index]}' ${index === numColumns ? 'selected' : ''}>${languages[index]}</option>`
                   ).join('')}
@@ -137,7 +137,7 @@
               localStorage.setItem('table', JSON.stringify(table));
             } else {
               // create a div and update it with the translation later
-              rows[i].insertAdjacentHTML('beforeend', `<div class='w-64 border p-2 inline-block translatedPhrase'></div>`);
+              rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase'></div>`);
               // if input is empty, don't translate
               if (rows[i].querySelector('input').value === '') {
                 table[i].push('');
@@ -168,12 +168,16 @@
                 })
                 .then(response => response.blob())
                 .then(audioBlob => {
-                  const audioUrl = URL.createObjectURL(audioBlob);
+                  const audioKey = `${rows[i].querySelector('input').value}_${languages[numColumns]}`;
+                  saveAudioToIndexedDB(audioKey, audioBlob);
                   rows[i].lastElementChild.innerHTML = `
-                    ${data.translated_text} 
-                    <svg onclick="playAudio('${audioUrl}')" class="inline-block w-4 h-4 ml-2 cursor-pointer hover:text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/>
-                    </svg>
+                    <div class="flex justify-between items-center">
+                      <span>${data.translated_text}</span>
+                      <svg onclick="playAudioFromCache('${audioKey}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 8l6 4-6 4V8z"/>
+                      </svg>
+                    </div>
                   `;
                 })
 
@@ -196,7 +200,7 @@
 
           let html = `
           <div class='phrases flex flex-row row w-full'>
-            <input row=${numRows} onchange='gtranslate(this)' type='text' name='text' class='w-64 p-2 phrases'></input>
+            <input row=${numRows} onchange='inputTranslate(this)' type='text' name='text' class='w-64 p-2 phrases border-1 border-[#767676] border-solid'></input>
           `
           document.querySelectorAll('.language').forEach((lang, i) => {
             if (i > 0) {
@@ -214,7 +218,7 @@
 
         }
 
-        function gtranslate(input) {
+        function inputTranslate(input) {
           /* 
           textInput onChange, iterate through the cells of the row / over the columns. translate first cell (text input) with the column language (select values)
           */
@@ -246,31 +250,40 @@
               })
               .then(response => response.json())
               .then(data => {
-                translationDivs[i].textContent = data.translated_text;
-                updateTableStorage();
+                // Add text-to-speech request here
+                fetch('http://localhost:3000/text-to-speech', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ text: data.translated_text, language: langSelect.value })
+                })
+                .then(response => response.blob())
+                .then(audioBlob => {
+                  const audioUrl = URL.createObjectURL(audioBlob);
+                  translationDivs[i].innerHTML = `
+                    <div class="flex justify-between items-center">
+                      <span>${data.translated_text}</span>
+                      <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 8l6 4-6 4V8z"/>
+                      </svg>
+                    </div>
+                  `;
+                  updateTableStorage();
+                });
               })
               .catch(error => {
                 translationDivs[i].textContent = 'Translation failed';
                 console.error('Translation error:', error);
-                });
+              });
           });
         }
 
         function translateColumn(select) {
-          /* 
-          When language selector changes:
-          1. Get column index
-          2. Get all phrase rows and filter out empty ones
-          3. For each row with text, translate and update the corresponding column
-          */
-          // 1. Get column index
           const columnIndex = [...select.parentElement.children].indexOf(select);
           
-          // 2. Get all phrase rows and filter out empty ones
           [...document.querySelectorAll('.phrases.row')]
             .filter(row => row.querySelector('input').value)
             .forEach(row => {
-              // 3. Translate and update the corresponding column
               fetch('http://localhost:3000/translate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -281,8 +294,25 @@
               })
               .then(response => response.json())
               .then(data => {
-                row.children[columnIndex].textContent = data.translated_text;
-                updateTableStorage();
+                fetch('http://localhost:3000/text-to-speech', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ text: data.translated_text, language: select.value })
+                })
+                .then(response => response.blob())
+                .then(audioBlob => {
+                  const audioUrl = URL.createObjectURL(audioBlob);
+                  row.children[columnIndex].innerHTML = `
+                    <div class="flex justify-between items-center">
+                      <span>${data.translated_text}</span>
+                      <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 8l6 4-6 4V8z"/>
+                      </svg>
+                    </div>
+                  `;
+                  updateTableStorage();
+                });
               })
               .catch(error => {
                 row.children[columnIndex].textContent = 'Translation failed';
@@ -294,9 +324,66 @@
         function playAudio(audioUrl) {
           new Audio(audioUrl).play();
         }
+
+        // Add IndexedDB setup
+        const dbName = "audioCache";
+        const dbVersion = 1;
+        const storeName = "audioFiles";
+
+        // Open/create the database
+        const dbRequest = indexedDB.open(dbName, dbVersion);
+
+        dbRequest.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(storeName)) {
+            db.createObjectStore(storeName);
+          }
+        };
+
+        // Helper functions for IndexedDB operations
+        function saveAudioToIndexedDB(key, audioBlob) {
+          const request = indexedDB.open(dbName);
+          request.onsuccess = (event) => {
+            const db = event.target.result;
+            const transaction = db.transaction([storeName], "readwrite");
+            const store = transaction.objectStore(storeName);
+            store.put(audioBlob, key);
+          };
+        }
+
+        function playAudioFromCache(key) {
+          const request = indexedDB.open(dbName);
+          request.onsuccess = (event) => {
+            const db = event.target.result;
+            const transaction = db.transaction([storeName], "readonly");
+            const store = transaction.objectStore(storeName);
+            const getRequest = store.get(key);
+            
+            getRequest.onsuccess = () => {
+              if (getRequest.result) {
+                const audioUrl = URL.createObjectURL(getRequest.result);
+                new Audio(audioUrl).play();
+              } else {
+                // If not in cache, fetch from server
+                const [text, language] = key.split('_');
+                fetch('http://localhost:3000/text-to-speech', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ text, language })
+                })
+                .then(response => response.blob())
+                .then(audioBlob => {
+                  saveAudioToIndexedDB(key, audioBlob);
+                  const audioUrl = URL.createObjectURL(audioBlob);
+                  new Audio(audioUrl).play();
+                });
+              }
+            };
+          };
+        }
     </script>
   </head>
-  <body class='w-full'>
+  <body class='w-full p-2'>
     <h1>Polyglot</h1>
 
     <!-- buttons -->
