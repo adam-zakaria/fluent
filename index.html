@@ -6,10 +6,11 @@
     <title>Language Selector</title>
     <script src="https://unpkg.com/htmx.org@1.8.4"></script>
     <link rel="stylesheet" href="/style.css">
+    <script type="module">
+        window.API_HOST = import.meta.env.VITE_API_HOST;
+    </script>
     <script>
-        const API_HOST = import.meta.env.VITE_API_HOST;
-
-        languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
+        let languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
         
         // Add updateTableStorage at the start of the script
         function updateTableStorage() {
@@ -35,7 +36,7 @@
 
         // append options to default select
 
-        options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
+        let options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
 
 
         // create default table if none exists
@@ -47,7 +48,7 @@
         }
 
         // build table html from local storage
-        html = '';
+        let html = '';
         JSON.parse(localStorage.getItem('table')).forEach((row, i) => {
           // First row is only selects (languages)
           if (i == 0) {

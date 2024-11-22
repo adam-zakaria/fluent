@@ -1,3 +1,13 @@
+# Run
+Local:
+```
+npm run dev
+```
+AWS:
+```
+npm run build
+```
+
 # TODO
 * emptying an onchange does not empty the translation.
 * Add delete row
