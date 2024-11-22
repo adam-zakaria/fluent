@@ -69,7 +69,20 @@
               }
               else{
                 // all other cells are divs (phrases)
-                html += `<div class="inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase">${cell}</div>`;
+                if (cell) {  // Only add play button if there's translated text
+                  html += `
+                    <div class="inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase">
+                      <div class="flex justify-between items-center">
+                        <span>${cell}</span>
+                        <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                          <path d="M10 8l6 4-6 4V8z"/>
+                        </svg>
+                      </div>
+                    </div>`;
+                } else {
+                  html += `<div class="inline-block w-64 border-1 border-[#767676] border-solid p-2 translatedPhrase"></div>`;
+                }
               }
             });
           }
@@ -168,12 +181,11 @@
                 })
                 .then(response => response.blob())
                 .then(audioBlob => {
-                  const audioKey = `${rows[i].querySelector('input').value}_${languages[numColumns]}`;
-                  saveAudioToIndexedDB(audioKey, audioBlob);
+                  saveAudioToIndexedDB(`${i}-${numColumns}`, audioBlob);
                   rows[i].lastElementChild.innerHTML = `
                     <div class="flex justify-between items-center">
                       <span>${data.translated_text}</span>
-                      <svg onclick="playAudioFromCache('${audioKey}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                      <svg onclick="playAudioFromCache('${i}-${numColumns}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
                       </svg>
@@ -258,11 +270,11 @@
                 })
                 .then(response => response.blob())
                 .then(audioBlob => {
-                  const audioUrl = URL.createObjectURL(audioBlob);
+                  saveAudioToIndexedDB(`${rowIndex}-${i+1}`, audioBlob);
                   translationDivs[i].innerHTML = `
                     <div class="flex justify-between items-center">
                       <span>${data.translated_text}</span>
-                      <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                      <svg onclick="playAudioFromCache('${rowIndex}-${i+1}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
                       </svg>
