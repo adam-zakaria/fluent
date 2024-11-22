@@ -8,6 +8,11 @@ AWS:
 npm run build
 ```
 
+Flask:
+```
+python3 -m flask run --host=0.0.0.0 --port=3000 --debug
+```
+
 # TODO
 * emptying an onchange does not empty the translation.
 * Add delete row
