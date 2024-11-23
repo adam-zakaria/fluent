@@ -13,9 +13,9 @@ CORS(app)
 translate_client = translate.Client()
 tts_client = texttospeech.TextToSpeechClient()
 
-@app.route('/translate', methods=['POST'])
+@app.route('/api/translate', methods=['POST'])
 def translate_text():
-    print('/translate')
+    print('/api/translate')
     data = request.json
     text = data.get('phrase')
     target_language = data.get('target_language')
@@ -47,9 +47,9 @@ def translate_text():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/text-to-speech', methods=['POST'])
+@app.route('/api/text-to-speech', methods=['POST'])
 def text_to_speech():
-    print('/text-to-speech', flush=True)
+    print('/api/text-to-speech', flush=True)
     language_map = {
         'english': 'en-US',
         'spanish': 'es-ES',

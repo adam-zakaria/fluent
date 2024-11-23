@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class='w-full' lang="en">
+<html class='w-full overflow-x-hidden' lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,23 +68,23 @@
             row.forEach((cell, j) => {
               // first cell is input
               if (j == 0) {
-                html += `<input row=${i} type="text" name="text" class="w-32 p-2 phrase border-1 border-[#767676] border-solid" onchange="inputTranslate(this); updateTableStorage()" value="${cell}"></input>`;
+                html += `<input row=${i} type="text" name="text" class="w-32 p-2 phrase border-1 border-[#767676] border-solid overflow-x-auto whitespace-nowrap" onchange="inputTranslate(this); updateTableStorage()" value="${cell}"></input>`;
               }
               else{
                 // all other cells are divs (phrases)
                 if (cell) {  // Only add play button if there's translated text
                   html += `
-                    <div class="inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase">
+                    <div class="inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase overflow-x-auto whitespace-nowrap">
                       <div class="flex justify-between items-center">
                         <span>${cell}</span>
-                        <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                        <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                           <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                           <path d="M10 8l6 4-6 4V8z"/>
                         </svg>
                       </div>
                     </div>`;
                 } else {
-                  html += `<div class="inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase"></div>`;
+                  html += `<div class="inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase overflow-x-auto whitespace-nowrap"></div>`;
                 }
               }
             });
@@ -153,7 +153,7 @@
               localStorage.setItem('table', JSON.stringify(table));
             } else {
               // create a div and update it with the translation later
-              rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase'></div>`);
+              rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase overflow-x-auto whitespace-nowrap'></div>`);
               // if input is empty, don't translate
               if (rows[i].querySelector('input').value === '') {
                 table[i].push('');
@@ -215,12 +215,12 @@
 
           let html = `
           <div class='phrases flex flex-row row w-full'>
-            <input row=${numRows} onchange='inputTranslate(this)' type='text' name='text' class='w-32 p-2 phrases border-1 border-[#767676] border-solid'></input>
+            <input row=${numRows} onchange='inputTranslate(this)' type='text' name='text' class='w-32 p-2 phrases border-1 border-[#767676] border-solid overflow-x-auto whitespace-nowrap'></input>
           `
           document.querySelectorAll('.language').forEach((lang, i) => {
             if (i > 0) {
               html += `
-              <div class='inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase'></div>
+              <div class='inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase overflow-x-auto whitespace-nowrap'></div>
               `
             }
             localStorageRow.push('');
@@ -276,8 +276,8 @@
                   saveAudioToIndexedDB(`${rowIndex}-${i+1}`, audioBlob);
                   translationDivs[i].innerHTML = `
                     <div class="flex justify-between items-center">
-                      <span>${data.translated_text}</span>
-                      <svg onclick="playAudioFromCache('${rowIndex}-${i+1}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                      <span class="overflow-x-auto whitespace-nowrap">${data.translated_text}</span>
+                      <svg onclick="playAudioFromCache('${rowIndex}-${i+1}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
                       </svg>
@@ -319,8 +319,8 @@
                   const audioUrl = URL.createObjectURL(audioBlob);
                   row.children[columnIndex].innerHTML = `
                     <div class="flex justify-between items-center">
-                      <span>${data.translated_text}</span>
-                      <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                      <span class="overflow-x-auto whitespace-nowrap">${data.translated_text}</span>
+                      <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
                       </svg>
@@ -398,8 +398,9 @@
         }
     </script>
   </head>
-  <body class='w-full p-2'>
-    <h1>Polyglot</h1>
+  <body class='w-full p-2 overflow-x-hidden'>
+    <h1>Hello!</h1>
+    <p>Enter phrases in the first column (then press enter or click away)</p>
 
     <!-- buttons -->
     <div class="pb-2">

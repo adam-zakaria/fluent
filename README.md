@@ -13,6 +13,16 @@ Flask:
 python3 -m flask run --host=0.0.0.0 --port=3000 --debug
 ```
 
+# Hosting
+We used route53, gandi and nginx. We took the route53 nameservers and added it to the gandi dashboard (I think). We added a policy to the IAM user 'adam' (route53_fluent), to allow some route53 CRUD. Generated certs with certbot and added it to flask. Redirected 80 to 5173 in nginx.
+
+# Certs
+List certs:
+```
+sudo certbot certificates
+```
+Nginx is configured to forward http to https, and it is working.
+
 ## Export api key
 Update this path.
 ```
