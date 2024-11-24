@@ -11,33 +11,8 @@
     </script>
     <script>
         let languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
-        
-        // Add updateTableStorage at the start of the script
-        function updateTableStorage() {
-          const table = [];
-          document.querySelectorAll('.row').forEach((row, rowIndex) => {
-            table[rowIndex] = [];
-            if (rowIndex === 0) {
-              // First row: get language values from selects
-              row.querySelectorAll('.language').forEach(select => {
-                table[rowIndex].push(select.value);
-              });
-            } else {
-              // Other rows: get input value and translated phrases
-              const input = row.querySelector('input');
-              table[rowIndex].push(input?.value || '');
-              row.querySelectorAll('.translatedPhrase').forEach(phrase => {
-                table[rowIndex].push(phrase.textContent || '');
-              });
-            }
-          });
-          localStorage.setItem('table', JSON.stringify(table));
-        }
-
         // append options to default select
-
         let options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
-
 
         // create default table if none exists
         if(localStorage.getItem('table') === null || localStorage.getItem('table') === '') {
@@ -68,7 +43,7 @@
             row.forEach((cell, j) => {
               // first cell is input
               if (j == 0) {
-                html += `<input row=${i} type="text" name="text" class="w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap" onchange="inputTranslate(this); updateTableStorage()" value="${cell}"></input>`;
+                html += `<input row=${i} type="text" name="text" class="w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap" onchange="inputTranslate(this)" value="${cell}"></input>`;
               }
               else{
                 // all other cells are divs (phrases)
@@ -93,7 +68,7 @@
         });
 
         window.onload = function() {
-          // render table, append to table div
+          // render table by appending to table div
           document.querySelector('.table').insertAdjacentHTML('beforeend', html);
           
           // Create observer to watch table changes
@@ -135,7 +110,6 @@
             alert('Max languages reached')
             return;
           }
-
           const rows = document.querySelectorAll('.row');
           // iterate through all rows, translate the first cell if it has text
           // first row is selects (languages), other rows are 1 input and n divs (phrases)
@@ -229,21 +203,14 @@
           localStorage.setItem('table', JSON.stringify(table));
           html += `</div>`
           document.querySelector('.table').insertAdjacentHTML('beforeend', html);
-
-
         }
 
         function inputTranslate(input) {
           /* 
           textInput onChange, iterate through the cells of the row / over the columns. translate first cell (text input) with the column language (select values)
           */
-
           // if text input is empty, don't translate
-          if (input.value === '') return;
-
-          /*
-          How to get the row index? 
-          */
+        if (input.value === '') return;
          let table = JSON.parse(localStorage.getItem('table'))
          let rowIndex = input.getAttribute('row');
          table[rowIndex][0] = input.value;
@@ -283,7 +250,6 @@
                       </svg>
                     </div>
                   `;
-                  updateTableStorage();
                 });
               })
               .catch(error => {
@@ -316,17 +282,16 @@
                 })
                 .then(response => response.blob())
                 .then(audioBlob => {
-                  const audioUrl = URL.createObjectURL(audioBlob);
+                  saveAudioToIndexedDB(`${rowIndex}-${columnIndex}`, audioBlob);
                   row.children[columnIndex].innerHTML = `
                     <div class="flex justify-between items-center text-wrap">
                       <span class="overflow-x-auto whitespace-nowrap">${data.translated_text}</span>
-                      <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <svg onclick="playAudioFromCache('${rowIndex}-${columnIndex}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
                       </svg>
                     </div>
                   `;
-                  updateTableStorage();
                 });
               })
               .catch(error => {
@@ -334,10 +299,6 @@
                 console.error('Translation error:', error);
               });
             });
-        }
-
-        function playAudio(audioUrl) {
-          new Audio(audioUrl).play();
         }
 
         // Add IndexedDB setup
