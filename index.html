@@ -18,20 +18,28 @@
     // or just have conditional
     let row = `<div class='flex flex-row row w-full'>`;
     let languageSelect =  `<select name='language' class='w-32 language pl-1 defaultSelect border-1 border-[#767676] border-solid text-left' onchange='translateColumn(this)'>`;
-    let phraseInput = (numRows) => `<textarea row=${numRows} name='text' class='w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap' onchange='translateRow(this)'>`;
+    let phraseTextArea = (numRows, innerText) => `<textarea row=${numRows} name='text' class='w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap' onchange='translateRow(this)'>${innerText}</textarea>`;
     let phraseSpan = `<span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20 translatedPhrase'>`;
     let playIcon = (i, j) => {
       return `<svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">`;
     }
-    translatedCell = (i, j, translated_text) => {
-      return `<div class="flex justify-between items-center text-wrap">
-                      <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20'>${translated_text}</span>
+    let translatedCell = (translated_text, i, j) => {
+      return `<div class="flex justify-between items-center text-wrap border-[#767676] border-solid">
+                      <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20 '>${translated_text}</span>
                       <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
                       </svg>
                     </div>`;
     }
+    let translatedCellContents = (translated_text, i, j) => {
+      return `<span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20 '>${translated_text}</span>
+                      <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 8l6 4-6 4V8z"/>
+                      </svg>`;
+    }
+    let emptyCell = `<div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase h-20 break-words text-wrap"></div>`;
     let languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
     // append options to default select
     let options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
@@ -64,25 +72,16 @@
         html += "<div class='flex flex-row phrases row w-full'>";
         // All other rows are 1 input and n divs (phrases)
         row.forEach((cell, j) => {
-          // first cell is input
+          // first cell is text area
           if (j == 0) {
-            html += `<textarea row=${i} name="text" class="w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap" onchange="translateRow(this)">${cell}</textarea>`;
+            html += phraseTextArea(i, cell);
           }
           else {
             // all other cells are divs (phrases)
-            if (cell) {  // Only add play button if there's translated text
-              html += `
-                    <div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase h-20 break-words text-wrap">
-                      <div class="flex justify-between items-center">
-                        <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20'>${cell}</span>
-                        <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                          <path d="M10 8l6 4-6 4V8z"/>
-                        </svg>
-                      </div>
-                    </div>`;
-            } else {
-              html += `<div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase h-20 break-words text-wrap"></div>`;
+            if (cell) {  // if there's translated text, translateCell
+              html += translatedCell(cell, i, j);
+            } else { // else, empty cell
+              html += emptyCell 
             }
           }
         });
@@ -313,7 +312,7 @@
                 .then(audioBlob => {
                   const rowIndex = [...row.parentElement.children].indexOf(row);
                   saveAudioToIndexedDB(`${rowIndex}-${columnIndex}`, audioBlob);
-                  row.children[columnIndex].innerHTML = translatedCell(rowIndex, columnIndex, data.translated_text);
+                  row.children[columnIndex].innerHTML = translatedCellContents(data.translated_text, rowIndex, columnIndex, );
                 });
             })
             .catch(error => {
