@@ -49,9 +49,9 @@
                 // all other cells are divs (phrases)
                 if (cell) {  // Only add play button if there's translated text
                   html += `
-                    <div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap">
+                    <div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase h-20 break-words text-wrap">
                       <div class="flex justify-between items-center">
-                        <span>${cell}</span>
+                        <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20'>${cell}</span>
                         <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                           <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                           <path d="M10 8l6 4-6 4V8z"/>
@@ -59,7 +59,7 @@
                       </div>
                     </div>`;
                 } else {
-                  html += `<div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap"></div>`;
+                  html += `<div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase h-20 break-words text-wrap"></div>`;
                 }
               }
             });
@@ -161,7 +161,7 @@
                   saveAudioToIndexedDB(`${i}-${numColumns}`, audioBlob);
                   rows[i].lastElementChild.innerHTML = `
                     <div class="flex justify-between items-center">
-                      <span>${data.translated_text}</span>
+                      <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20'>${data.translated_text}</span>
                       <svg onclick="playAudioFromCache('${i}-${numColumns}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
@@ -194,7 +194,7 @@
           document.querySelectorAll('.language').forEach((lang, i) => {
             if (i > 0) {
               html += `
-              <div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap'></div>
+              <div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase h-20 break-words text-wrap'></div>
               `
             }
             localStorageRow.push('');
@@ -247,7 +247,7 @@
                   saveAudioToIndexedDB(`${rowIndex}-${i+1}`, audioBlob);
                   translationDivs[i].innerHTML = `
                     <div class="flex justify-between items-center text-wrap">
-                      <span class="overflow-x-auto whitespace-nowrap">${data.translated_text}</span>
+                      <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20'>${data.translated_text}</span>
                       <svg onclick="playAudioFromCache('${rowIndex}-${i+1}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
@@ -289,7 +289,7 @@
                   saveAudioToIndexedDB(`${rowIndex}-${columnIndex}`, audioBlob);
                   row.children[columnIndex].innerHTML = `
                     <div class="flex justify-between items-center text-wrap">
-                      <span class="overflow-x-auto whitespace-nowrap">${data.translated_text}</span>
+                      <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20">${data.translated_text}</span>
                       <svg onclick="playAudioFromCache('${rowIndex}-${columnIndex}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
