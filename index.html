@@ -23,6 +23,15 @@
     let playIcon = (i, j) => {
       return `<svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">`;
     }
+    translatedCell = (i, j, translated_text) => {
+      return `<div class="flex justify-between items-center text-wrap">
+                      <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20'>${translated_text}</span>
+                      <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 8l6 4-6 4V8z"/>
+                      </svg>
+                    </div>`;
+    }
 
     let languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
     // append options to default select
@@ -281,6 +290,7 @@
       const columnIndex = [...select.parentElement.children].indexOf(select);
 
       // get all rows except for the first (phrase rows)
+
       [...document.querySelectorAll('.phrases.row')]
         .filter(row => row.querySelector('textarea').value)
         .forEach(row => {
@@ -301,16 +311,9 @@
               })
                 .then(response => response.blob())
                 .then(audioBlob => {
+                  const rowIndex = [...row.parentElement.children].indexOf(row);
                   saveAudioToIndexedDB(`${rowIndex}-${columnIndex}`, audioBlob);
-                  row.children[columnIndex].innerHTML = `
-                    <div class="flex justify-between items-center text-wrap">
-                      <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20">${data.translated_text}</span>
-                      <svg onclick="playAudioFromCache('${rowIndex}-${columnIndex}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                        <path d="M10 8l6 4-6 4V8z"/>
-                      </svg>
-                    </div>
-                  `;
+                  row.children[columnIndex].innerHTML = translatedCell(rowIndex, columnIndex, data.translated_text);
                 });
             })
             .catch(error => {
