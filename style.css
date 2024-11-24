@@ -1,4 +1,8 @@
 @tailwind utilities;
+html{
+  overscroll-behavior: none;
+  overflow: hidden;
+}
 
 input, select, div {
   /* 

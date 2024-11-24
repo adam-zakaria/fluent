@@ -2,7 +2,7 @@
 <html class='w-full overflow-x-hidden' lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Language Selector</title>
     <script src="https://unpkg.com/htmx.org@1.8.4"></script>
     <link rel="stylesheet" href="/style.css">
@@ -54,7 +54,7 @@
           if (i == 0) {
             html += "<div class='flex flex-row languages row w-full'>";
             row.forEach((language, j) => {
-              html += `<select name="language" class="w-32 language p-2 defaultSelect border-1 border-[#767676] border-solid" onchange="translateColumn(this)">`;
+              html += `<select name="language" class="w-32 language pl-1 defaultSelect border-1 border-[#767676] border-solid text-left" onchange="translateColumn(this)">`;
               languages.forEach(lang => {
                 html += `<option value="${lang}" ${lang === language ? 'selected' : ''}>${lang}</option>`;
               });
@@ -68,13 +68,13 @@
             row.forEach((cell, j) => {
               // first cell is input
               if (j == 0) {
-                html += `<input row=${i} type="text" name="text" class="w-32 p-2 phrase border-1 border-[#767676] border-solid overflow-x-auto whitespace-nowrap" onchange="inputTranslate(this); updateTableStorage()" value="${cell}"></input>`;
+                html += `<input row=${i} type="text" name="text" class="w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap" onchange="inputTranslate(this); updateTableStorage()" value="${cell}"></input>`;
               }
               else{
                 // all other cells are divs (phrases)
                 if (cell) {  // Only add play button if there's translated text
                   html += `
-                    <div class="inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase overflow-x-auto whitespace-nowrap">
+                    <div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap">
                       <div class="flex justify-between items-center">
                         <span>${cell}</span>
                         <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
@@ -84,7 +84,7 @@
                       </div>
                     </div>`;
                 } else {
-                  html += `<div class="inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase overflow-x-auto whitespace-nowrap"></div>`;
+                  html += `<div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap"></div>`;
                 }
               }
             });
@@ -153,7 +153,7 @@
               localStorage.setItem('table', JSON.stringify(table));
             } else {
               // create a div and update it with the translation later
-              rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase overflow-x-auto whitespace-nowrap'></div>`);
+              rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap'></div>`);
               // if input is empty, don't translate
               if (rows[i].querySelector('input').value === '') {
                 table[i].push('');
@@ -215,12 +215,12 @@
 
           let html = `
           <div class='phrases flex flex-row row w-full'>
-            <input row=${numRows} onchange='inputTranslate(this)' type='text' name='text' class='w-32 p-2 phrases border-1 border-[#767676] border-solid overflow-x-auto whitespace-nowrap'></input>
+            <input row=${numRows} onchange='inputTranslate(this)' type='text' name='text' class='w-32 pl-1 phrases border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap'></input>
           `
           document.querySelectorAll('.language').forEach((lang, i) => {
             if (i > 0) {
               html += `
-              <div class='inline-block w-32 border-1 border-[#767676] border-solid p-2 translatedPhrase overflow-x-auto whitespace-nowrap'></div>
+              <div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap'></div>
               `
             }
             localStorageRow.push('');
@@ -275,7 +275,7 @@
                 .then(audioBlob => {
                   saveAudioToIndexedDB(`${rowIndex}-${i+1}`, audioBlob);
                   translationDivs[i].innerHTML = `
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center text-wrap">
                       <span class="overflow-x-auto whitespace-nowrap">${data.translated_text}</span>
                       <svg onclick="playAudioFromCache('${rowIndex}-${i+1}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
@@ -318,7 +318,7 @@
                 .then(audioBlob => {
                   const audioUrl = URL.createObjectURL(audioBlob);
                   row.children[columnIndex].innerHTML = `
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center text-wrap">
                       <span class="overflow-x-auto whitespace-nowrap">${data.translated_text}</span>
                       <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
@@ -398,7 +398,7 @@
         }
     </script>
   </head>
-  <body class='w-full p-2 overflow-x-hidden'>
+  <body class='w-full p-2 overflow-x-hidden touch-pan-y'>
     <h1>Hello!</h1>
     <p>Enter phrases in the first column (then press enter or click away)</p>
 
@@ -411,8 +411,11 @@
       Add Phrase (row)
     </button>
     </div>
-    <!-- table-->
-    <div class='overflow-x-auto w-full whitespace-nowrap table'>
+    <!-- table -->
+    <div class='overflow-x-auto w-full whitespace-nowrap'>
+      <div class='table'>
+        <!-- Table content will be inserted here -->
+      </div>
     </div>
   </body>
 </html>
