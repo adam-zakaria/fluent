@@ -180,15 +180,7 @@
                 .then(response => response.blob())
                 .then(audioBlob => {
                   saveAudioToIndexedDB(`${i}-${numColumns}`, audioBlob);
-                  rows[i].lastElementChild.innerHTML = `
-                    <div class="flex justify-between items-center">
-                      <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20'>${data.translated_text}</span>
-                      <svg onclick="playAudioFromCache('${i}-${numColumns}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                        <path d="M10 8l6 4-6 4V8z"/>
-                      </svg>
-                    </div>
-                  `;
+                  rows[i].lastElementChild.innerHTML = translatedCellContents(data.translated_text, i, numColumns);
                 })
 
             })
@@ -209,14 +201,11 @@
       let table = JSON.parse(localStorage.getItem('table'))
 
       let html = `
-          <div class='phrases flex flex-row row w-full'>
-            <textarea row=${numRows} onchange='translateRow(this)' name='text' class='w-32 pl-1 phrases border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap'></textarea>
-          `
+          <div class='phrases flex flex-row row w-full'>`
+      html += phraseTextArea(numRows, '');
       document.querySelectorAll('.language').forEach((lang, i) => {
         if (i > 0) {
-          html += `
-              <div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase h-20 break-words text-wrap'></div>
-              `
+          html += emptyCell;
         }
         localStorageRow.push('');
       });
