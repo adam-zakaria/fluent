@@ -267,15 +267,7 @@
               .then(response => response.blob())
               .then(audioBlob => {
                 saveAudioToIndexedDB(`${rowIndex}-${i + 1}`, audioBlob);
-                translationSpans[i].innerHTML = `
-                    <div class="flex justify-between items-center text-wrap">
-                      <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20'>${data.translated_text}</span>
-                      <svg onclick="playAudioFromCache('${rowIndex}-${i + 1}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                        <path d="M10 8l6 4-6 4V8z"/>
-                      </svg>
-                    </div>
-                  `;
+                translationSpans[i].innerHTML = translatedCellContents(data.translated_text, rowIndex, i + 1);
               });
           })
           .catch(error => {
