@@ -32,7 +32,6 @@
                       </svg>
                     </div>`;
     }
-
     let languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
     // append options to default select
     let options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
@@ -51,6 +50,7 @@
       // First row is only selects (languages)
       if (i == 0) {
         html += "<div class='flex flex-row languages row w-full'>";
+        // set the option to the language in this row of localstorage
         row.forEach((language, j) => {
           html += `<select name="language" class="w-32 language pl-1 defaultSelect border-1 border-[#767676] border-solid text-left" onchange="translateColumn(this)">`;
           languages.forEach(lang => {
