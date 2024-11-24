@@ -268,7 +268,7 @@
 
       // get all rows except for the first (phrase rows)
 
-      [...document.querySelectorAll('.phrases.row')]
+      [...document.querySelectorAll('.row')].slice(1)
         .filter(row => row.querySelector('textarea').value)
         .forEach(row => {
           fetch(`${API_HOST}/translate`, {
