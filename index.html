@@ -43,7 +43,7 @@
             row.forEach((cell, j) => {
               // first cell is input
               if (j == 0) {
-                html += `<textarea row=${i} name="text" class="w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap" onchange="inputTranslate(this)">${cell}</textarea>`;
+                html += `<textarea row=${i} name="text" class="w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap" onchange="translateRow(this)">${cell}</textarea>`;
               }
               else{
                 // all other cells are divs (phrases)
@@ -189,7 +189,7 @@
 
           let html = `
           <div class='phrases flex flex-row row w-full'>
-            <textarea row=${numRows} onchange='inputTranslate(this)' name='text' class='w-32 pl-1 phrases border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap'></textarea>
+            <textarea row=${numRows} onchange='translateRow(this)' name='text' class='w-32 pl-1 phrases border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap'></textarea>
           `
           document.querySelectorAll('.language').forEach((lang, i) => {
             if (i > 0) {
@@ -205,7 +205,7 @@
           document.querySelector('.table').insertAdjacentHTML('beforeend', html);
         }
 
-        function inputTranslate(input) {
+        function translateRow(input) {
           /* 
           textInput onChange, iterate through the cells of the row / over the columns. translate first cell (text input) with the column language (select values)
           */
