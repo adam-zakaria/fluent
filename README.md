@@ -33,6 +33,7 @@ Export GOOGLE_APPLICATION_CREDENTIALS="/Users/azakaria/Code/polyglot_old/backend
 # TODO
 * emptying an onchange does not empty the translation.
 * Add delete row
+* don't edit in prod
 
 # Translate API key
 Translate api will automatically look for key in path specified here.

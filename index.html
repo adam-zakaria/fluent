@@ -12,7 +12,7 @@
     <script>
         let languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
         
-        // Add updateTableStorage at the start of the script
+        // Add table to local storage (called every table modification)
         function updateTableStorage() {
           const table = [];
           document.querySelectorAll('.row').forEach((row, rowIndex) => {
@@ -35,7 +35,6 @@
         }
 
         // append options to default select
-
         let options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
 
 
@@ -68,16 +67,16 @@
             row.forEach((cell, j) => {
               // first cell is input
               if (j == 0) {
-                html += `<input row=${i} type="text" name="text" class="w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap" onchange="inputTranslate(this); updateTableStorage()" value="${cell}"></input>`;
+                html += `<textarea row=${i} name="text" class="w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap" onchange="inputTranslate(this); updateTableStorage()">${cell}</textarea>`;
               }
               else{
-                // all other cells are divs (phrases)
+                // all other cells are div span svg (phrases)
                 if (cell) {  // Only add play button if there's translated text
                   html += `
                     <div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap">
-                      <div class="flex justify-between items-center">
-                        <span>${cell}</span>
-                        <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <div class="flex justify-between items-center text-wrap">
+                        <span class="overflow-y-auto whitespace-nowrap text-wrap flex-grow max-h-20">${cell}</span>
+                        <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="currentColor">
                           <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                           <path d="M10 8l6 4-6 4V8z"/>
                         </svg>
@@ -96,9 +95,10 @@
           // render table, append to table div
           document.querySelector('.table').insertAdjacentHTML('beforeend', html);
           
-          // Create observer to watch table changes
+          /*
+          Create observer to watch table changes the call back is called every time the table changes (when observe is triggered), updating the local storage with the new table.
+          */
           const tableObserver = new MutationObserver(() => {
-            console.log('table changed');
             const table = [];
             document.querySelectorAll('.row').forEach((row, rowIndex) => {
               table[rowIndex] = [];
@@ -155,7 +155,7 @@
               // create a div and update it with the translation later
               rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap'></div>`);
               // if input is empty, don't translate
-              if (rows[i].querySelector('input').value === '') {
+              if (rows[i].querySelector('textarea').value === '') {
                 table[i].push('');
                 localStorage.setItem('table', JSON.stringify(table));
                 continue;
@@ -168,7 +168,7 @@
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  phrase: rows[i].querySelector('input').value,
+                  phrase: rows[i].querySelector('textarea').value,
                   target_language: languages[numColumns]
                 })
               })
@@ -186,9 +186,9 @@
                 .then(audioBlob => {
                   saveAudioToIndexedDB(`${i}-${numColumns}`, audioBlob);
                   rows[i].lastElementChild.innerHTML = `
-                    <div class="flex justify-between items-center">
-                      <span>${data.translated_text}</span>
-                      <svg onclick="playAudioFromCache('${i}-${numColumns}')" class="w-4 h-4 cursor-pointer hover:text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                    <div class="flex justify-between items-center text-wrap">
+                      <span class="overflow-y-auto whitespace-nowrap text-wrap flex-grow max-h-20">${data.translated_text}</span>
+                      <svg onclick="playAudioFromCache('${i}-${numColumns}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
                       </svg>
@@ -215,7 +215,7 @@
 
           let html = `
           <div class='phrases flex flex-row row w-full'>
-            <input row=${numRows} onchange='inputTranslate(this)' type='text' name='text' class='w-32 pl-1 phrases border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap'></input>
+            <textarea row=${numRows} onchange='inputTranslate(this)' name='text' class='w-32 pl-1 phrases border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap'></textarea>
           `
           document.querySelectorAll('.language').forEach((lang, i) => {
             if (i > 0) {
@@ -276,8 +276,8 @@
                   saveAudioToIndexedDB(`${rowIndex}-${i+1}`, audioBlob);
                   translationDivs[i].innerHTML = `
                     <div class="flex justify-between items-center text-wrap">
-                      <span class="overflow-x-auto whitespace-nowrap">${data.translated_text}</span>
-                      <svg onclick="playAudioFromCache('${rowIndex}-${i+1}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <span class="overflow-y-auto whitespace-nowrap text-wrap flex-grow max-h-20">${data.translated_text}</span>
+                      <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
                       </svg>
@@ -319,8 +319,8 @@
                   const audioUrl = URL.createObjectURL(audioBlob);
                   row.children[columnIndex].innerHTML = `
                     <div class="flex justify-between items-center text-wrap">
-                      <span class="overflow-x-auto whitespace-nowrap">${data.translated_text}</span>
-                      <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <span class="overflow-y-auto whitespace-nowrap text-wrap flex-grow max-h-20">${data.translated_text}</span>
+                      <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
                       </svg>
