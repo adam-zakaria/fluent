@@ -209,8 +209,6 @@
           /* 
           textInput onChange, iterate through the cells of the row / over the columns. translate first cell (text input) with the column language (select values)
           */
-          // if text input is empty, don't translate
-        if (input.value === '') return;
          let table = JSON.parse(localStorage.getItem('table'))
          let rowIndex = input.getAttribute('row');
          table[rowIndex][0] = input.value;
@@ -219,6 +217,12 @@
           // get all but first column
           const languageSelects = [...document.querySelectorAll('.language')].slice(1);
           const translationDivs = input.parentElement.querySelectorAll('.translatedPhrase');
+
+          // if text input is empty, don't translate
+        if (input.value === ''){
+          translationDivs.forEach(div => div.textContent = ''); // Clear the divs on input change
+          return;
+        } 
           
           // iterate over all columns of the text input row
           languageSelects.forEach((langSelect, i) => {
