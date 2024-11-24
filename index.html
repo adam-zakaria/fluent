@@ -149,7 +149,7 @@
           localStorage.setItem('table', JSON.stringify(table));
         } else {
           // create a div and update it with the translation later
-          rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap'></div>`);
+          rows[i].insertAdjacentHTML('beforeend', emptyCell);
           // if input is empty, don't translate
           if (rows[i].querySelector('textarea').value === '') {
             table[i].push('');
@@ -157,7 +157,6 @@
             continue;
           }
           // update the div with the translation
-          let translatedText = '';
           fetch(`${API_HOST}/translate`, {
             method: 'POST',
             headers: {
