@@ -1,54 +1,68 @@
 <!DOCTYPE html>
 <html class='w-full overflow-x-hidden' lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Language Selector</title>
-    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
-    <link rel="stylesheet" href="/style.css">
-    <script type="module">
-        window.API_HOST = import.meta.env.VITE_API_HOST;
-    </script>
-    <script>
-        let languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
-        // append options to default select
-        let options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
 
-        // create default table if none exists
-        if(localStorage.getItem('table') === null || localStorage.getItem('table') === '') {
-          localStorage.setItem('table', JSON.stringify([
-            ['english', 'spanish'],
-            ['', ''],
-          ]));
-        }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Language Selector</title>
+  <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module">
+    window.API_HOST = import.meta.env.VITE_API_HOST;
+  </script>
+  <script>
+    /*
+    create html elements to be used throughout the code
+    */
+    // Remove query selectors with languages and phrases so we can use them generically
+    // or just have conditional
+    let row = `<div class='flex flex-row row w-full'>`;
+    let languageSelect = (thisElement) => { `<select name='language' class='w-32 language pl-1 defaultSelect border-1 border-[#767676] border-solid text-left' onchange='translateColumn(this)'>`;}
+    let phraseInput = (numRows) => `<textarea row=${numRows} name='text' class='w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap' onchange='translateRow(this)'>`;
+    let phraseSpan = `<span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20'>`;
+    let playIcon = (i, j) => {
+      return `<svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">`;
+    }
 
-        // build table html from local storage
-        let html = '';
-        JSON.parse(localStorage.getItem('table')).forEach((row, i) => {
-          // First row is only selects (languages)
-          if (i == 0) {
-            html += "<div class='flex flex-row languages row w-full'>";
-            row.forEach((language, j) => {
-              html += `<select name="language" class="w-32 language pl-1 defaultSelect border-1 border-[#767676] border-solid text-left" onchange="translateColumn(this)">`;
-              languages.forEach(lang => {
-                html += `<option value="${lang}" ${lang === language ? 'selected' : ''}>${lang}</option>`;
-              });
-              html += '</select>';
-            });
-            html += '</div>';
+    let languages = ["english", "spanish", "mandarin", "japanese", "russian", "hindi", "arabic", "portuguese"]
+    // append options to default select
+    let options = languages.map(lang => `<option value='${lang}'>${lang}</option>`)
+
+    // create default table if none exists
+    if (localStorage.getItem('table') === null || localStorage.getItem('table') === '') {
+      localStorage.setItem('table', JSON.stringify([
+        ['english', 'spanish'],
+        ['', ''],
+      ]));
+    }
+
+    // build table html from local storage
+    let html = '';
+    JSON.parse(localStorage.getItem('table')).forEach((row, i) => {
+      // First row is only selects (languages)
+      if (i == 0) {
+        html += "<div class='flex flex-row languages row w-full'>";
+        row.forEach((language, j) => {
+          html += `<select name="language" class="w-32 language pl-1 defaultSelect border-1 border-[#767676] border-solid text-left" onchange="translateColumn(this)">`;
+          languages.forEach(lang => {
+            html += `<option value="${lang}" ${lang === language ? 'selected' : ''}>${lang}</option>`;
+          });
+          html += '</select>';
+        });
+        html += '</div>';
+      }
+      else {
+        html += "<div class='flex flex-row phrases row w-full'>";
+        // All other rows are 1 input and n divs (phrases)
+        row.forEach((cell, j) => {
+          // first cell is input
+          if (j == 0) {
+            html += `<textarea row=${i} name="text" class="w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap" onchange="translateRow(this)">${cell}</textarea>`;
           }
-          else{
-            html += "<div class='flex flex-row phrases row w-full'>";
-            // All other rows are 1 input and n divs (phrases)
-            row.forEach((cell, j) => {
-              // first cell is input
-              if (j == 0) {
-                html += `<textarea row=${i} name="text" class="w-32 pl-1 phrase border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap" onchange="translateRow(this)">${cell}</textarea>`;
-              }
-              else{
-                // all other cells are divs (phrases)
-                if (cell) {  // Only add play button if there's translated text
-                  html += `
+          else {
+            // all other cells are divs (phrases)
+            if (cell) {  // Only add play button if there's translated text
+              html += `
                     <div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase h-20 break-words text-wrap">
                       <div class="flex justify-between items-center">
                         <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20'>${cell}</span>
@@ -58,104 +72,104 @@
                         </svg>
                       </div>
                     </div>`;
-                } else {
-                  html += `<div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase h-20 break-words text-wrap"></div>`;
-                }
-              }
-            });
+            } else {
+              html += `<div class="inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase h-20 break-words text-wrap"></div>`;
+            }
           }
-        html += '</div>';
         });
+      }
+      html += '</div>';
+    });
 
-        window.onload = function() {
-          // render table by appending to table div
-          document.querySelector('.table').insertAdjacentHTML('beforeend', html);
-          
-          // Create observer to watch table changes
-          const tableObserver = new MutationObserver(() => {
-            console.log('table changed');
-            const table = [];
-            document.querySelectorAll('.row').forEach((row, rowIndex) => {
-              table[rowIndex] = [];
-              if (rowIndex === 0) {
-                // First row: get language values from selects
-                row.querySelectorAll('.language').forEach(select => {
-                  table[rowIndex].push(select.value);
-                });
-              } else {
-                // Other rows: get input value and translated phrases
-                const input = row.querySelector('input');
-                table[rowIndex].push(input?.value || '');
-                row.querySelectorAll('.translatedPhrase').forEach(phrase => {
-                  table[rowIndex].push(phrase.textContent || '');
-                });
-              }
+    window.onload = function () {
+      // render table by appending to table div
+      document.querySelector('.table').insertAdjacentHTML('beforeend', html);
+
+      // Create observer to watch table changes
+      const tableObserver = new MutationObserver(() => {
+        console.log('table changed');
+        const table = [];
+        document.querySelectorAll('.row').forEach((row, rowIndex) => {
+          table[rowIndex] = [];
+          if (rowIndex === 0) {
+            // First row: get language values from selects
+            row.querySelectorAll('.language').forEach(select => {
+              table[rowIndex].push(select.value);
             });
-            localStorage.setItem('table', JSON.stringify(table));
-          });
-
-          // Start observing the table div for changes
-          tableObserver.observe(document.querySelector('.table'), {
-            subtree: true, // Watch all descendants
-            childList: true, // Watch for added/removed nodes
-            characterData: true, // Watch for text changes
-            attributes: true // Watch for attribute changes
-          });
-        };
-
-        function add_col() {
-          table = JSON.parse(localStorage.getItem('table'))
-          let numColumns = document.querySelectorAll('.language').length;
-          if (numColumns === languages.length){
-            alert('Max languages reached')
-            return;
+          } else {
+            // Other rows: get input value and translated phrases
+            const input = row.querySelector('input');
+            table[rowIndex].push(input?.value || '');
+            row.querySelectorAll('.translatedPhrase').forEach(phrase => {
+              table[rowIndex].push(phrase.textContent || '');
+            });
           }
-          const rows = document.querySelectorAll('.row');
-          // iterate through all rows, translate the first cell if it has text
-          // first row is selects (languages), other rows are 1 input and n divs (phrases)
-          // if 
-          for (let i = 0; i < rows.length; i++) {
-            if (i === 0) {
-              rows[i].insertAdjacentHTML('beforeend', `
+        });
+        localStorage.setItem('table', JSON.stringify(table));
+      });
+
+      // Start observing the table div for changes
+      tableObserver.observe(document.querySelector('.table'), {
+        subtree: true, // Watch all descendants
+        childList: true, // Watch for added/removed nodes
+        characterData: true, // Watch for text changes
+        attributes: true // Watch for attribute changes
+      });
+    };
+
+    function add_col() {
+      table = JSON.parse(localStorage.getItem('table'))
+      let numColumns = document.querySelectorAll('.language').length;
+      if (numColumns === languages.length) {
+        alert('Max languages reached')
+        return;
+      }
+      const rows = document.querySelectorAll('.row');
+      // iterate through all rows, translate the first cell if it has text
+      // first row is selects (languages), other rows are 1 input and n divs (phrases)
+      // if 
+      for (let i = 0; i < rows.length; i++) {
+        if (i === 0) {
+          rows[i].insertAdjacentHTML('beforeend', `
                 <select onchange='translateColumn(this)' name='language' class='w-32 language p-2 border-1 border-[#767676] border-solid'>
-                  ${options.map((opt, index) => 
-                    `<option value='${languages[index]}' ${index === numColumns ? 'selected' : ''}>${languages[index]}</option>`
-                  ).join('')}
+                  ${options.map((opt, index) =>
+            `<option value='${languages[index]}' ${index === numColumns ? 'selected' : ''}>${languages[index]}</option>`
+          ).join('')}
                 </select>
               `);
-              table[i].push(languages[numColumns]);
-              localStorage.setItem('table', JSON.stringify(table));
-            } else {
-              // create a div and update it with the translation later
-              rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap'></div>`);
-              // if input is empty, don't translate
-              if (rows[i].querySelector('input').value === '') {
-                table[i].push('');
-                localStorage.setItem('table', JSON.stringify(table));
-                continue;
-              }
+          table[i].push(languages[numColumns]);
+          localStorage.setItem('table', JSON.stringify(table));
+        } else {
+          // create a div and update it with the translation later
+          rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap'></div>`);
+          // if input is empty, don't translate
+          if (rows[i].querySelector('input').value === '') {
+            table[i].push('');
+            localStorage.setItem('table', JSON.stringify(table));
+            continue;
+          }
+          // update the div with the translation
+          let translatedText = '';
+          fetch(`${API_HOST}/translate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              phrase: rows[i].querySelector('input').value,
+              target_language: languages[numColumns]
+            })
+          })
+            .then(response => response.json())
+            .then(data => {
               // update the div with the translation
-              let translatedText = '';
-              fetch(`${API_HOST}/translate`, {
+              // hit the text to speech api, and update the div with a play icon to play the audio
+              console.log(data)
+              fetch(`${API_HOST}/text-to-speech`, {
                 method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  phrase: rows[i].querySelector('input').value,
-                  target_language: languages[numColumns]
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: data.translated_text, language: languages[numColumns] })
               })
-              .then(response => response.json())
-              .then(data => {
-                // update the div with the translation
-                // hit the text to speech api, and update the div with a play icon to play the audio
-                console.log(data)
-                fetch(`${API_HOST}/text-to-speech`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ text: data.translated_text, language: languages[numColumns] })
-                })
                 .then(response => response.blob())
                 .then(audioBlob => {
                   saveAudioToIndexedDB(`${i}-${numColumns}`, audioBlob);
@@ -170,120 +184,120 @@
                   `;
                 })
 
-              })
-              .catch(error => {
-                rows[i].lastElementChild.textContent = 'Translation failed';
-                console.error('Translation error:', error);
-              });
+            })
+            .catch(error => {
+              rows[i].lastElementChild.textContent = 'Translation failed';
+              console.error('Translation error:', error);
+            });
 
-            }
-          }
         }
+      }
+    }
 
-        function add_row() {
-          // add <div>1<input>#cols<div></div></div>
-          // get the number of rows from HTML
-          let numRows = document.querySelectorAll('.row').length;
-          let localStorageRow = [];
-          let table = JSON.parse(localStorage.getItem('table'))
+    function add_row() {
+      // add <div>1<input>#cols<div></div></div>
+      // get the number of rows from HTML
+      let numRows = document.querySelectorAll('.row').length;
+      let localStorageRow = [];
+      let table = JSON.parse(localStorage.getItem('table'))
 
-          let html = `
+      let html = `
           <div class='phrases flex flex-row row w-full'>
             <textarea row=${numRows} onchange='translateRow(this)' name='text' class='w-32 pl-1 phrases border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap'></textarea>
           `
-          document.querySelectorAll('.language').forEach((lang, i) => {
-            if (i > 0) {
-              html += `
+      document.querySelectorAll('.language').forEach((lang, i) => {
+        if (i > 0) {
+          html += `
               <div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase h-20 break-words text-wrap'></div>
               `
-            }
-            localStorageRow.push('');
-          });
-          table.push(localStorageRow);
-          localStorage.setItem('table', JSON.stringify(table));
-          html += `</div>`
-          document.querySelector('.table').insertAdjacentHTML('beforeend', html);
         }
+        localStorageRow.push('');
+      });
+      table.push(localStorageRow);
+      localStorage.setItem('table', JSON.stringify(table));
+      html += `</div>`
+      document.querySelector('.table').insertAdjacentHTML('beforeend', html);
+    }
 
-        function translateRow(input) {
-          /* 
-          textInput onChange, iterate through the cells of the row / over the columns. translate first cell (text input) with the column language (select values)
-          */
-         let table = JSON.parse(localStorage.getItem('table'))
-         let rowIndex = input.getAttribute('row');
-         table[rowIndex][0] = input.value;
-         localStorage.setItem('table', JSON.stringify(table));
+    function translateRow(input) {
+      /* 
+      textInput onChange, iterate through the cells of the row / over the columns. translate first cell (text input) with the column language (select values)
+      */
+      let table = JSON.parse(localStorage.getItem('table'))
+      let rowIndex = input.getAttribute('row');
+      table[rowIndex][0] = input.value;
+      localStorage.setItem('table', JSON.stringify(table));
 
-          // get all but first column
-          const languageSelects = [...document.querySelectorAll('.language')].slice(1);
-          const translationDivs = input.parentElement.querySelectorAll('.translatedPhrase');
+      // get all but first column
+      const languageSelects = [...document.querySelectorAll('.language')].slice(1);
+      const translationDivs = input.parentElement.querySelectorAll('.translatedPhrase');
 
-          // if text input is empty, don't translate
-        if (input.value === ''){
-          translationDivs.forEach(div => div.textContent = ''); // Clear the divs on input change
-          return;
-        } 
-          
-          // iterate over all columns of the text input row
-          languageSelects.forEach((langSelect, i) => {
-              fetch(`${API_HOST}/translate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                phrase: input.value,
-                target_language: langSelect.value
-              })
-              })
-              .then(response => response.json())
-              .then(data => {
-                // Add text-to-speech request here
-                fetch(`${API_HOST}/text-to-speech`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ text: data.translated_text, language: langSelect.value })
-                })
-                .then(response => response.blob())
-                .then(audioBlob => {
-                  saveAudioToIndexedDB(`${rowIndex}-${i+1}`, audioBlob);
-                  translationDivs[i].innerHTML = `
+      // if text input is empty, don't translate
+      if (input.value === '') {
+        translationDivs.forEach(div => div.textContent = ''); // Clear the divs on input change
+        return;
+      }
+
+      // iterate over all columns of the text input row
+      languageSelects.forEach((langSelect, i) => {
+        fetch(`${API_HOST}/translate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phrase: input.value,
+            target_language: langSelect.value
+          })
+        })
+          .then(response => response.json())
+          .then(data => {
+            // Add text-to-speech request here
+            fetch(`${API_HOST}/text-to-speech`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: data.translated_text, language: langSelect.value })
+            })
+              .then(response => response.blob())
+              .then(audioBlob => {
+                saveAudioToIndexedDB(`${rowIndex}-${i + 1}`, audioBlob);
+                translationDivs[i].innerHTML = `
                     <div class="flex justify-between items-center text-wrap">
                       <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20'>${data.translated_text}</span>
-                      <svg onclick="playAudioFromCache('${rowIndex}-${i+1}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <svg onclick="playAudioFromCache('${rowIndex}-${i + 1}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
                         <path d="M10 8l6 4-6 4V8z"/>
                       </svg>
                     </div>
                   `;
-                });
-              })
-              .catch(error => {
-                translationDivs[i].textContent = 'Translation failed';
-                console.error('Translation error:', error);
               });
+          })
+          .catch(error => {
+            translationDivs[i].textContent = 'Translation failed';
+            console.error('Translation error:', error);
           });
-        }
+      });
+    }
 
-        function translateColumn(select) {
-          const columnIndex = [...select.parentElement.children].indexOf(select);
-          
-          [...document.querySelectorAll('.phrases.row')]
-            .filter(row => row.querySelector('input').value)
-            .forEach(row => {
-              fetch(`${API_HOST}/translate`, {
+    function translateColumn(select) {
+      const columnIndex = [...select.parentElement.children].indexOf(select);
+
+      [...document.querySelectorAll('.phrases.row')]
+        .filter(row => row.querySelector('input').value)
+        .forEach(row => {
+          fetch(`${API_HOST}/translate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              phrase: row.querySelector('input').value,
+              target_language: select.value
+            })
+          })
+            .then(response => response.json())
+            .then(data => {
+              fetch(`${API_HOST}/text-to-speech`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  phrase: row.querySelector('input').value,
-                  target_language: select.value
-                })
+                body: JSON.stringify({ text: data.translated_text, language: select.value })
               })
-              .then(response => response.json())
-              .then(data => {
-                fetch(`${API_HOST}/text-to-speech`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ text: data.translated_text, language: select.value })
-                })
                 .then(response => response.blob())
                 .then(audioBlob => {
                   saveAudioToIndexedDB(`${rowIndex}-${columnIndex}`, audioBlob);
@@ -297,90 +311,92 @@
                     </div>
                   `;
                 });
-              })
-              .catch(error => {
-                row.children[columnIndex].textContent = 'Translation failed';
-                console.error('Translation error:', error);
-              });
+            })
+            .catch(error => {
+              row.children[columnIndex].textContent = 'Translation failed';
+              console.error('Translation error:', error);
             });
-        }
+        });
+    }
 
-        // Add IndexedDB setup
-        const dbName = "audioCache";
-        const dbVersion = 1;
-        const storeName = "audioFiles";
+    // Add IndexedDB setup
+    const dbName = "audioCache";
+    const dbVersion = 1;
+    const storeName = "audioFiles";
 
-        // Open/create the database
-        const dbRequest = indexedDB.open(dbName, dbVersion);
+    // Open/create the database
+    const dbRequest = indexedDB.open(dbName, dbVersion);
 
-        dbRequest.onupgradeneeded = (event) => {
-          const db = event.target.result;
-          if (!db.objectStoreNames.contains(storeName)) {
-            db.createObjectStore(storeName);
+    dbRequest.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(storeName)) {
+        db.createObjectStore(storeName);
+      }
+    };
+
+    // Helper functions for IndexedDB operations
+    function saveAudioToIndexedDB(key, audioBlob) {
+      const request = indexedDB.open(dbName);
+      request.onsuccess = (event) => {
+        const db = event.target.result;
+        const transaction = db.transaction([storeName], "readwrite");
+        const store = transaction.objectStore(storeName);
+        store.put(audioBlob, key);
+      };
+    }
+
+    function playAudioFromCache(key) {
+      const request = indexedDB.open(dbName);
+      request.onsuccess = (event) => {
+        const db = event.target.result;
+        const transaction = db.transaction([storeName], "readonly");
+        const store = transaction.objectStore(storeName);
+        const getRequest = store.get(key);
+
+        getRequest.onsuccess = () => {
+          if (getRequest.result) {
+            const audioUrl = URL.createObjectURL(getRequest.result);
+            new Audio(audioUrl).play();
+          } else {
+            // If not in cache, fetch from server
+            const [text, language] = key.split('_');
+            fetch(`${API_HOST}/text-to-speech`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text, language })
+            })
+              .then(response => response.blob())
+              .then(audioBlob => {
+                saveAudioToIndexedDB(key, audioBlob);
+                const audioUrl = URL.createObjectURL(audioBlob);
+                new Audio(audioUrl).play();
+              });
           }
         };
+      };
+    }
+  </script>
+</head>
 
-        // Helper functions for IndexedDB operations
-        function saveAudioToIndexedDB(key, audioBlob) {
-          const request = indexedDB.open(dbName);
-          request.onsuccess = (event) => {
-            const db = event.target.result;
-            const transaction = db.transaction([storeName], "readwrite");
-            const store = transaction.objectStore(storeName);
-            store.put(audioBlob, key);
-          };
-        }
+<body class='w-full p-2 overflow-x-hidden touch-pan-y'>
+  <h1>Hello!</h1>
+  <p>Enter phrases in the first column (then press enter or click away)</p>
 
-        function playAudioFromCache(key) {
-          const request = indexedDB.open(dbName);
-          request.onsuccess = (event) => {
-            const db = event.target.result;
-            const transaction = db.transaction([storeName], "readonly");
-            const store = transaction.objectStore(storeName);
-            const getRequest = store.get(key);
-            
-            getRequest.onsuccess = () => {
-              if (getRequest.result) {
-                const audioUrl = URL.createObjectURL(getRequest.result);
-                new Audio(audioUrl).play();
-              } else {
-                // If not in cache, fetch from server
-                const [text, language] = key.split('_');
-                fetch(`${API_HOST}/text-to-speech`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ text, language })
-                })
-                .then(response => response.blob())
-                .then(audioBlob => {
-                  saveAudioToIndexedDB(key, audioBlob);
-                  const audioUrl = URL.createObjectURL(audioBlob);
-                  new Audio(audioUrl).play();
-                });
-              }
-            };
-          };
-        }
-    </script>
-  </head>
-  <body class='w-full p-2 overflow-x-hidden touch-pan-y'>
-    <h1>Hello!</h1>
-    <p>Enter phrases in the first column (then press enter or click away)</p>
-
-    <!-- buttons -->
-    <div class="pb-2">
+  <!-- buttons -->
+  <div class="pb-2">
     <button onclick="add_col()">
       Add Language (column)
     </button>
     <button onclick="add_row()">
       Add Phrase (row)
     </button>
+  </div>
+  <!-- table -->
+  <div class='overflow-x-auto w-full whitespace-nowrap'>
+    <div class='table'>
+      <!-- Table content will be inserted here -->
     </div>
-    <!-- table -->
-    <div class='overflow-x-auto w-full whitespace-nowrap'>
-      <div class='table'>
-        <!-- Table content will be inserted here -->
-      </div>
-    </div>
-  </body>
+  </div>
+</body>
+
 </html>
