@@ -31,8 +31,30 @@ Update this path.
 Export GOOGLE_APPLICATION_CREDENTIALS="/Users/azakaria/Code/polyglot_old/backend/helical-glass-264223-7cb954d1e0b4.json"
 ```
 # TODO
-* emptying an onchange does not empty the translation.
-* Add delete row
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------
 
 # Translate API key
 Translate api will automatically look for key in path specified here.
