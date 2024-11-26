@@ -24,12 +24,8 @@
     let translationCellOpenTag = `<div class="flex justify-between items-center text-wrap border-[#767676] border-solid w-32 h-20 translationCell">`
     let translationCellWrapper = `${translationCellOpenTag}</div>`
     let translationCell = (translated_text, i, j) => {
-      return `${translationCellWrapper}
-                      <span class='text-wrap overflow-y-auto whitespace-nowrap w-32 h-20 '>${translated_text}</span>
-                      <svg onclick="playAudioFromCache('${i}-${j}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                        <path d="M10 8l6 4-6 4V8z"/>
-                      </svg>
+      return `${translationCellOpenTag}
+                    ${translationCellContents(translated_text, i, j)}
                     </div>`;
     }
     let translationCellContents = (translated_text, i, j) => {
