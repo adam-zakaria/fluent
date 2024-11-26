@@ -32,8 +32,8 @@ Export GOOGLE_APPLICATION_CREDENTIALS="/Users/azakaria/Code/polyglot_old/backend
 ```
 # TODO
 * collapse borders
-* use textarea for div
-
+* use textarea for translation cell
+* it seems like the textarea innerhtml is getting set to the translationcellcontents...actually because it's a textarea this is probably how it works.
 
 
 
