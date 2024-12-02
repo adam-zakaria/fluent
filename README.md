@@ -3,14 +3,54 @@ Local:
 ```
 npm run dev
 ```
-AWS:
+Loads .env and .env.development
+
+On AWS we're running a dev and prod build: frontend and backend. prod front is 5173 with VITE_API_HOST=https://fluent.monster/api and dev front is 5174 with VITE_API_HOST=https://dev.fluent.monster/api
+
+To run a build specify it in the package.json like 
+
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview",
+  "dev:aws": "PORT=5174 vite --mode aws"
+},
+
+npm run dev:aws will load .env.aws and run the dev server on port 5174. It seems like PORT didn't actually work but since 5173 is taken by prod it just tried 5174 so that's fine.
+
+and the config in 
+export default defineConfig({
+  plugins: [],
+  server: {
+    port: process.env.PORT || 5173, // Default to 5173 if PORT is not set
+    host: '0.0.0.0',
+  },
+})
+
+Okay so using dev.fluent.monster requires DNS changes and cert changes and that's all kind of unnecessary at this point. Maybe we can just use an IP. 
+
+i.e. 
+
+VITE_API_HOST=http://54.167.31.12:3001/api
+I think we can just bypass the nginx and go straight to the vite server.
+
+## Dev
+pm2 start 'python3 -m flask run --host=0.0.0.0 --port=3001 --debug' --name fluent_flask_dev
+pm2 start 'npm run dev:aws' --name fluent_dev
+
+
 ```
 npm run build
 ```
 
 Flask:
+prod
 ```
 python3 -m flask run --host=0.0.0.0 --port=3000 --debug
+```
+dev
+```
+python3 -m flask run --host=0.0.0.0 --port=3001 --debug
 ```
 
 # Hosting

@@ -32,7 +32,13 @@ def translate_text():
         'russian': 'ru',
         'hindi': 'hi',
         'arabic': 'ar',
-        'portuguese': 'pt'
+        'portuguese (br)': 'pt-BR',
+        'french': 'fr',
+        'bengali': 'bn',
+        'urdu': 'ur',
+        'indonesian': 'id',
+        'german': 'de',
+        'thai': 'th'
     }
 
     if target_language not in language_map:
@@ -58,7 +64,13 @@ def text_to_speech():
         'russian': 'ru-RU',
         'hindi': 'hi-IN',
         'arabic': 'ar-XA',
-        'portuguese': 'pt-PT'
+        'portuguese (br)': 'pt-BR',
+        'french': 'fr-FR',
+        'bengali': 'bn-BD',
+        'urdu': 'ur-PK',
+        'indonesian': 'id-ID',
+        'german': 'de-DE',
+        'thai': 'th-TH'
     }
 
     data = request.json
