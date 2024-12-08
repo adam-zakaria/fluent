@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev:aws_dev": "vite --mode aws_dev",
-    "prod": "vite build && serve -s dist -l 5173",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "aws_dev": "PORT=5174 vite --mode aws_dev",
+    "aws_prod": "vite build && serve -s dist -l 5173"
   },
   "devDependencies": {
     "@eslint/js": "^9.10.0",

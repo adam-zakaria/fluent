@@ -165,6 +165,7 @@
               // update the div with the translation
               // hit the text to speech api, and update the div with a play icon to play the audio
               console.log(data)
+              debugger;
               fetch(`${API_HOST}/text-to-speech`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -240,6 +241,8 @@
           .then(response => response.json())
           .then(data => {
             // Add text-to-speech request here
+            console.log('translateRow')
+            //debugger;
             fetch(`${API_HOST}/text-to-speech`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
