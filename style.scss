@@ -29,7 +29,7 @@ $border-radius: 4px;
 }
 
 @mixin font-small{
-  font-size: 12px;
+  font-size: 14px;
 }
 
 h1, h2, h3, h4, h5, h6{
@@ -43,6 +43,7 @@ html {
   font-family: 'Atma', sans-serif;
   line-height: 1.5;
   background-color: $primary-color;
+
 }
 
 // border can't be easily applied to all because div wrappers are used everywhere. so maybe we just want a border property? and then with buttons...not sure how border works
@@ -57,6 +58,7 @@ select, button, textarea{
   font-family: 'Atma', sans-serif;
   background-color: $secondary-color;
   @include border;
+  color: black;
   transition: background-color 0.3s, color 0.3s; // Smooth transition for hover effects
   cursor: pointer;
   &:hover {
