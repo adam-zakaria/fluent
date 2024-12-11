@@ -1,0 +1,86 @@
+/*
+in style.css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+Properties That Cascade
+1. Font Properties: font-family, font-size, font-weight, font-style, etc.
+2. Text Properties: color, text-align, text-indent, line-height, etc.
+3. List Properties: list-style-type, list-style-position, etc.
+These properties will automatically apply to child elements unless overridden by a more specific rule.
+Properties That Do Not Cascade
+Box Model Properties: margin, padding, border, width, height, etc.
+2. Background Properties: background-color, background-image, etc.
+Positioning Properties: position, top, right, bottom, left, etc.
+*/
+
+$primary-color: #007F73;
+$secondary-color: #4CCD99;
+$accent-color: #FFC700;
+$accent-color-2: #FFF455;
+
+$border-color: $accent-color; // Gray
+$border-width: 1px;
+$border-radius: 4px;
+@mixin border{
+  border-radius: $border-radius;
+  border: $border-width solid $border-color;
+}
+
+@mixin font-small{
+  font-size: 12px;
+}
+
+h1, h2, h3, h4, h5, h6{
+  margin: 0;
+  display: inline-block;
+}
+
+// Some properties cascade down, some must use the universal selector
+html {
+  color: $accent-color;
+  font-family: 'Atma', sans-serif;
+  line-height: 1.5;
+  background-color: $primary-color;
+}
+
+// border can't be easily applied to all because div wrappers are used everywhere. so maybe we just want a border property? and then with buttons...not sure how border works
+/*
+* {
+  //padding: 2px;
+}
+*/
+
+select, button, textarea{
+  @include font-small;
+  font-family: 'Atma', sans-serif;
+  background-color: $secondary-color;
+  @include border;
+  transition: background-color 0.3s, color 0.3s; // Smooth transition for hover effects
+  cursor: pointer;
+  &:hover {
+    background-color: darken($secondary-color, 10%);
+  }
+}
+svg{
+  cursor: pointer;
+  &:hover {
+    background-color: darken($secondary-color, 10%);
+  }
+}
+
+
+
+.box{
+  @include border;
+  @include font-small;
+  font-family: 'Atma', sans-serif;
+  color: black;
+  background-color: $secondary-color;
+}
+
+/*
+jiggle animate row and col creations
+button presses
+*/
