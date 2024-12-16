@@ -1,58 +1,29 @@
 # Run
-Local:
-```
-npm run dev
-```
-AWS:
-```
-npm run build
-```
+## Local
+`npm run dev`
+Loads .env and .env.development
 
-Flask:
-```
-python3 -m flask run --host=0.0.0.0 --port=3000 --debug
-```
+## AWS
+see deploy_all.sh
+
+## Notes
+`npm run dev:aws_dev` calls from `package.json``"dev:aws_dev": "vite --mode aws_dev"`. `vite.config.js` does things based on mode, i.e. set hot reload for dev but not prod `hmr: mode === 'aws_dev', // Enable HMR only in 'aws_dev' mode`
+
 
 # Hosting
 We used route53, gandi and nginx. We took the route53 nameservers and added it to the gandi dashboard (I think). We added a policy to the IAM user 'adam' (route53_fluent), to allow some route53 CRUD. Generated certs with certbot and added it to flask. Redirected 80 to 5173 in nginx.
 
 # Certs
 List certs:
-```
-sudo certbot certificates
-```
+`sudo certbot certificates`
+
 Nginx is configured to forward http to https, and it is working.
 
 Nginx and the .env's needed to be updated for the backend to be https. Look at /etc/nginx/nginx.conf and .env for more.
 
 ## Export api key
 Update this path.
-```
-Export GOOGLE_APPLICATION_CREDENTIALS="/Users/azakaria/Code/polyglot_old/backend/helical-glass-264223-7cb954d1e0b4.json"
-```
-# TODO
-* emptying an onchange does not empty the translation.
-* Add delete row
-* don't edit in prod
+`Export GOOGLE_APPLICATION_CREDENTIALS="/Users/azakaria/Code/polyglot_old/backend/helical-glass-264223-7cb954d1e0b4.json"`
 
-# Translate API key
-Translate api will automatically look for key in path specified here.
-
-# HTMX talking points
-* form data centric
-* HATEOAS
-  * state stored in html (not 'double state' in frontend, (js + html))
-* single file
-* felt like writing simple apps in react was way more a pain that I wanted it to be (FOR ME)
-* tailwind not working with server markup
-
-# style prefs
-* single file
-* lierate programming
-* html as state
-* one dev shop
-* minimize cognitive load
-  * clojure
-  * ruby consistency
-* globals (refactor when the time comes: let's deal with scale, in the very unlikely event scale ever comes)
-
+# If the translation randomly stops working, confirm GOOGLE_APPLICATION_CREDENTIALS is set to the correct key.
+export GOOGLE_APPLICATION_CREDENTIALS="/home/ubuntu/Code/fluent/key.json"
