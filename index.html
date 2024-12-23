@@ -139,19 +139,6 @@
           ).join('')}
                 </select>
               `);
-<<<<<<< HEAD
-              table[i].push(languages[numColumns]);
-              localStorage.setItem('table', JSON.stringify(table));
-            } else {
-              // create a div and update it with the translation later
-              rows[i].insertAdjacentHTML('beforeend', `<div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap'></div>`);
-              // if input is empty, don't translate
-              if (rows[i].querySelector('textarea').value === '') {
-                table[i].push('');
-                localStorage.setItem('table', JSON.stringify(table));
-                continue;
-              }
-=======
           table[i].push(languages[numColumns]);
           localStorage.setItem('table', JSON.stringify(table));
         } else {
@@ -176,178 +163,17 @@
           })
             .then(response => response.json())
             .then(data => {
->>>>>>> use_observer
               // update the div with the translation
               // hit the text to speech api, and update the div with a play icon to play the audio
               console.log(data)
               fetch(`${API_HOST}/text-to-speech`, {
                 method: 'POST',
-<<<<<<< HEAD
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  phrase: rows[i].querySelector('textarea').value,
-                  target_language: languages[numColumns]
-                })
-=======
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: data.translated_text, language: languages[numColumns] })
->>>>>>> use_observer
               })
                 .then(response => response.blob())
                 .then(audioBlob => {
                   saveAudioToIndexedDB(`${i}-${numColumns}`, audioBlob);
-<<<<<<< HEAD
-                  rows[i].lastElementChild.innerHTML = `
-                    <div class="flex justify-between items-center text-wrap">
-                      <span class="overflow-y-auto whitespace-nowrap text-wrap flex-grow max-h-20">${data.translated_text}</span>
-                      <svg onclick="playAudioFromCache('${i}-${numColumns}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                        <path d="M10 8l6 4-6 4V8z"/>
-                      </svg>
-                    </div>
-                  `;
-                })
-
-              })
-              .catch(error => {
-                rows[i].lastElementChild.textContent = 'Translation failed';
-                console.error('Translation error:', error);
-              });
-
-            }
-          }
-        }
-
-        function add_row() {
-          // add <div>1<input>#cols<div></div></div>
-          // get the number of rows from HTML
-          let numRows = document.querySelectorAll('.row').length;
-          let localStorageRow = [];
-          let table = JSON.parse(localStorage.getItem('table'))
-
-          let html = `
-          <div class='phrases flex flex-row row w-full'>
-            <textarea row=${numRows} onchange='inputTranslate(this)' name='text' class='w-32 pl-1 phrases border-1 border-[#767676] border-solid overflow-y-auto h-20 break-words text-wrap'></textarea>
-          `
-          document.querySelectorAll('.language').forEach((lang, i) => {
-            if (i > 0) {
-              html += `
-              <div class='inline-block w-32 border-1 border-[#767676] border-solid pl-1 translatedPhrase overflow-y-auto h-20 break-words text-wrap'></div>
-              `
-            }
-            localStorageRow.push('');
-          });
-          table.push(localStorageRow);
-          localStorage.setItem('table', JSON.stringify(table));
-          html += `</div>`
-          document.querySelector('.table').insertAdjacentHTML('beforeend', html);
-
-
-        }
-
-        function inputTranslate(input) {
-          /* 
-          textInput onChange, iterate through the cells of the row / over the columns. translate first cell (text input) with the column language (select values)
-          */
-
-          // if text input is empty, don't translate
-          if (input.value === '') return;
-
-          /*
-          How to get the row index? 
-          */
-         let table = JSON.parse(localStorage.getItem('table'))
-         let rowIndex = input.getAttribute('row');
-         table[rowIndex][0] = input.value;
-         localStorage.setItem('table', JSON.stringify(table));
-
-          // get all but first column
-          const languageSelects = [...document.querySelectorAll('.language')].slice(1);
-          const translationDivs = input.parentElement.querySelectorAll('.translatedPhrase');
-          
-          // iterate over all columns of the text input row
-          languageSelects.forEach((langSelect, i) => {
-              fetch(`${API_HOST}/translate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                phrase: input.value,
-                target_language: langSelect.value
-              })
-              })
-              .then(response => response.json())
-              .then(data => {
-                // Add text-to-speech request here
-                fetch(`${API_HOST}/text-to-speech`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ text: data.translated_text, language: langSelect.value })
-                })
-                .then(response => response.blob())
-                .then(audioBlob => {
-                  saveAudioToIndexedDB(`${rowIndex}-${i+1}`, audioBlob);
-                  translationDivs[i].innerHTML = `
-                    <div class="flex justify-between items-center text-wrap">
-                      <span class="overflow-y-auto whitespace-nowrap text-wrap flex-grow max-h-20">${data.translated_text}</span>
-                      <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                        <path d="M10 8l6 4-6 4V8z"/>
-                      </svg>
-                    </div>
-                  `;
-                  updateTableStorage();
-                });
-              })
-              .catch(error => {
-                translationDivs[i].textContent = 'Translation failed';
-                console.error('Translation error:', error);
-              });
-          });
-        }
-
-        function translateColumn(select) {
-          const columnIndex = [...select.parentElement.children].indexOf(select);
-          
-          [...document.querySelectorAll('.phrases.row')]
-            .filter(row => row.querySelector('input').value)
-            .forEach(row => {
-              fetch(`${API_HOST}/translate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  phrase: row.querySelector('input').value,
-                  target_language: select.value
-                })
-              })
-              .then(response => response.json())
-              .then(data => {
-                fetch(`${API_HOST}/text-to-speech`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ text: data.translated_text, language: select.value })
-                })
-                .then(response => response.blob())
-                .then(audioBlob => {
-                  const audioUrl = URL.createObjectURL(audioBlob);
-                  row.children[columnIndex].innerHTML = `
-                    <div class="flex justify-between items-center text-wrap">
-                      <span class="overflow-y-auto whitespace-nowrap text-wrap flex-grow max-h-20">${data.translated_text}</span>
-                      <svg onclick="playAudio('${audioUrl}')" class="w-4 h-4 cursor-pointer hover:text-blue-500 flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
-                        <path d="M10 8l6 4-6 4V8z"/>
-                      </svg>
-                    </div>
-                  `;
-                  updateTableStorage();
-                });
-              })
-              .catch(error => {
-                row.children[columnIndex].textContent = 'Translation failed';
-                console.error('Translation error:', error);
-              });
-=======
                   rows[i].lastElementChild.innerHTML = translationCellContents(data.translated_text, i, numColumns);
                 })
 
@@ -355,7 +181,6 @@
             .catch(error => {
               rows[i].lastElementChild.textContent = 'Translation failed';
               console.error('Translation error:', error);
->>>>>>> use_observer
             });
 
         }
