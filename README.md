@@ -1,3 +1,6 @@
+# Introduction
+It seems like use_observer on localhost is the last working place
+
 # Run
 ## Local
 `npm run dev`
@@ -27,3 +30,41 @@ Update this path.
 
 # If the translation randomly stops working, confirm GOOGLE_APPLICATION_CREDENTIALS is set to the correct key.
 export GOOGLE_APPLICATION_CREDENTIALS="/home/ubuntu/Code/fluent/key.json"
+
+
+# Schema Conversion
+## Schema
+{
+english: {
+  'great': {'spanish': 'grande', 'french': 'grand', 'japanese': {'non_roman': '偉大な', 'roman': 'iie'}}
+  },
+}
+
+This seems fine.
+{
+english: {
+  'great': {'spanish': {'roman':'grande', 'non_roman': ''}, 'french': {'roman': 'grand', 'non_roman': ''}, 'japanese': {'non_roman': '偉大な', 'roman': 'iie'}}
+  },
+}
+This also requires changes to the localstorage? Which is a pain? ummmm localstorage is just html...so maybe not. Actually it's not :)
+It's a list of lists
+[['english','spanish','french'],['hello', 'hola', 'bonjour']]
+
+Depending on checkbox, render roman or not.
+
+A new top level key gets added for source langs in other langs (we know english so we translate from english.)
+
+Not sure how to do the tts audio files. Maybe a separate file?
+
+{
+english: {
+  'great': 'audio/great.mp3',
+  'hello': 'audio/hello.mp3'
+  },
+spanish: 
+  'rojo': 'audio/rojo.mp3',
+  'hola': 'audio/hola.mp3'
+}
+
+
+
