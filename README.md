@@ -1,6 +1,3 @@
-# Introduction
-It seems like use_observer on localhost is the last working place
-
 # Run
 ## Local
 `npm run dev`
@@ -11,7 +8,6 @@ see deploy_all.sh
 
 ## Notes
 `npm run dev:aws_dev` calls from `package.json``"dev:aws_dev": "vite --mode aws_dev"`. `vite.config.js` does things based on mode, i.e. set hot reload for dev but not prod `hmr: mode === 'aws_dev', // Enable HMR only in 'aws_dev' mode`
-
 
 # Hosting
 We used route53, gandi and nginx. We took the route53 nameservers and added it to the gandi dashboard (I think). We added a policy to the IAM user 'adam' (route53_fluent), to allow some route53 CRUD. Generated certs with certbot and added it to flask. Redirected 80 to 5173 in nginx.
